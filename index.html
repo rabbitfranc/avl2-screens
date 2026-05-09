@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVL — Anti-Villain League Auth System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d0d0d;
+    --bg2: #111111;
+    --bg3: #181818;
+    --red: #e63030;
+    --red-dim: #7a1a1a;
+    --red-glow: #ff4444;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --text: #f0f0f0;
+    --text-dim: #888888;
+    --text-hint: #444444;
+    --border: #2a2a2a;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Rajdhani', sans-serif;
+    --screen-w: 390px;
+    --screen-h: 844px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1a1a;
+    font-family: var(--mono);
+    padding: 60px 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  /* ── Screen wrapper ── */
+  .frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #555;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .screen {
+    width: var(--screen-w);
+    height: var(--screen-h);
+    background: var(--bg);
+    border-radius: 0;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 36px 80px;
+    border: 1px solid #222;
+  }
+
+  /* ── Status bar ── */
+  .statusbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .avl-mark {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #2a2a2a;
+  }
+
+  .net-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+  .dot-green { background: #22c55e; }
+  .dot-amber { background: #f59e0b; }
+  .dot-red   { background: #e63030; }
+
+  /* ── Layer badge ── */
+  .layer-badge {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-hint);
+    margin-bottom: 32px;
+    text-align: center;
+  }
+
+  /* ── Section title ── */
+  .sec-title {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--red);
+    margin-bottom: 6px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .sec-heading {
+    font-family: var(--sans);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  .sec-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    text-align: center;
+    letter-spacing: 1px;
+    line-height: 1.6;
+  }
+
+  /* ── Input fields ── */
+  .field-group {
+    width: 100%;
+    margin-bottom: 14px;
+  }
+
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #555;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .field {
+    width: 100%;
+    height: 48px;
+    background: #161616;
+    border: 1px solid #2a2a2a;
+    border-radius: 0;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  .field-active {
+    border-color: var(--red);
+    box-shadow: 0 0 0 1px var(--red-dim);
+  }
+
+  .field-error {
+    border-color: var(--red-glow);
+  }
+
+  .field-value { color: var(--text); }
+  .field-placeholder { color: #333; }
+
+  .field-eye {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #444;
+    font-size: 14px;
+  }
+
+  .char-count {
+    font-size: 10px;
+    color: #444;
+    text-align: right;
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    width: 100%;
+    height: 48px;
+    background: var(--red);
+    border: none;
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+
+  .btn-outline {
+    width: 100%;
+    height: 44px;
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+
+  .btn-ghost {
+    width: 100%;
+    height: 40px;
+    background: transparent;
+    border: 1px solid #222;
+    color: #555;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+
+  /* ── Warning / Error box ── */
+  .warn-box {
+    width: 100%;
+    background: #120000;
+    border: 1px solid #5a0000;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+  }
+
+  .warn-text {
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 1px;
+    line-height: 1.5;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: #1a1a1a;
+    margin: 20px 0;
+  }
+
+  .divider-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #333;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  /* ── Timer ── */
+  .timer-large {
+    font-size: 56px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    text-align: center;
+    margin: 16px 0;
+  }
+
+  .timer-green { color: var(--green); }
+  .timer-amber { color: var(--amber); }
+  .timer-red   { color: var(--red);   }
+
+  /* ── Progress bar ── */
+  .progress-wrap {
+    width: 100%;
+    height: 2px;
+    background: #1a1a1a;
+    margin: 16px 0;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--red);
+  }
+
+  .progress-fill-green { background: var(--green); }
+
+  /* ── Boot lines ── */
+  .boot-lines {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .boot-line {
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 3px 0;
+  }
+
+  .bl-dim    { color: #2a2a2a; }
+  .bl-active { color: var(--red); }
+  .bl-ok     { color: var(--green); }
+
+  /* ── AVL Logo ── */
+  .avl-logo-large {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: #2a2a2a;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .avl-wordmark {
+    font-family: var(--sans);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: 8px;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  /* ── Biometric frame ── */
+  .bio-frame {
+    width: 200px;
+    height: 150px;
+    border: 1px solid var(--red);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0 auto 16px;
+  }
+
+  .corner {
+    position: absolute;
+    width: 16px; height: 16px;
+    border-color: var(--red);
+    border-style: solid;
+  }
+  .c-tl { top: -1px; left: -1px;  border-width: 2px 0 0 2px; }
+  .c-tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+  .c-bl { bottom: -1px; left: -1px;  border-width: 0 0 2px 2px; }
+  .c-br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+  .bio-icon {
+    font-size: 48px;
+    color: #2a2a2a;
+    line-height: 1;
+  }
+
+  .scan-bar {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: var(--red);
+    opacity: 0.6;
+    top: 40%;
+  }
+
+  /* ── Fingerprint ── */
+  .fp-circle {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    border: 1px solid var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    position: relative;
+  }
+
+  .fp-icon-svg {
+    font-size: 44px;
+    color: var(--red);
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    width: 100%;
+    border: 1px solid #222;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    flex: 1;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #555;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .tab-active {
+    background: #1a0000;
+    color: var(--red);
+  }
+
+  /* ── Network modal ── */
+  .modal-bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-box {
+    width: 280px;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .modal-icon {
+    font-size: 32px;
+    color: var(--red);
+    margin-bottom: 16px;
+    line-height: 1;
+  }
+
+  /* ── Success ring ── */
+  .success-ring {
+    width: 84px; height: 84px;
+    border-radius: 50%;
+    border: 2px solid var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+  }
+
+  .check-icon {
+    font-size: 36px;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  /* ── Terminate overlay ── */
+  .terminate-bg {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      #0d0d0d, #0d0d0d 2px,
+      #111 2px, #111 4px
+    );
+  }
+
+  /* ── Clearance badge ── */
+  .clearance-badge {
+    display: inline-flex;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid #2a2a2a;
+    padding: 6px 16px;
+    margin-top: 8px;
+  }
+
+  .clr-item {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #555;
+  }
+
+  /* ── Footer ── */
+  .screen-footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid #181818;
+  }
+
+  .footer-text {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #2a2a2a;
+  }
+
+  /* ── Stealth screen ── */
+  .stealth-screen {
+    background: #050505;
+  }
+
+  .stealth-pulse {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 1px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 24px auto;
+  }
+
+  .stealth-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #2a2a2a;
+  }
+
+  /* ── Countdown large ── */
+  .countdown-huge {
+    font-size: 88px;
+    color: var(--red);
+    letter-spacing: 2px;
+    text-align: center;
+    line-height: 1;
+    margin: 16px 0;
+  }
+
+  /* ── Reason code ── */
+  .reason-box {
+    border: 1px solid #2a0000;
+    background: #0d0000;
+    padding: 10px 20px;
+    margin: 16px 0;
+    text-align: center;
+    width: 100%;
+  }
+
+  .reason-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #444;
+    margin-bottom: 4px;
+  }
+
+  .reason-value {
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--red);
+  }
+
+  /* helper: invisible SVG icon fallbacks */
+  .ico { display: inline-block; font-style: normal; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 0 — SYSTEM BOOT
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 0 · System Boot</div>
+  <div class="screen">
+    <div class="statusbar">
+      <span class="avl-mark">A · V · L</span>
+      <span class="net-indicator" style="color:#2a2a2a">PROTOCOL A-17</span>
+    </div>
+
+    <div class="avl-logo-large">A · V · L</div>
+    <div class="avl-wordmark">SYSTEM</div>
+
+    <div class="boot-lines">
+      <div class="boot-line bl-active">► INITIALIZING SECURE CHANNEL...</div>
+      <div class="boot-line bl-ok">✓ ENCRYPTION HANDSHAKE OK</div>
+      <div class="boot-line bl-ok">✓ LOCATION MASKED</div>
+      <div class="boot-line bl-ok">✓ IDENTITY PROTOCOLS ARMED</div>
+      <div class="boot-line bl-dim">_ AWAITING AGENT...</div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-fill" style="width:72%"></div>
+    </div>
+
+    <div style="font-size:10px;letter-spacing:2px;color:#333;margin-top:16px">PROTOCOL A-17 ACTIVE</div>
+
+    <div class="screen-footer">
+      <span class="footer-text">ANTI-VILLAIN LEAGUE — CLASSIFIED</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 1 — LAYER 1: LOGIN
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 1 · Agent Identification</div>
+  <div class="screen">
+    <div class="statusbar">
+      <span class="avl-mark">A · V · L</span>
+      <div class="net-indicator" style="color:#444">
+        <span class="dot dot-green"></span>
+        <span style="font-size:10px;letter-spacing:1px;color:#444">SECURE</span>
+      </div>
+    </div>
+
+    <div class="layer-badge">PROTOCOL A-17 · LAYER 1 OF 3</div>
+
+    <div class="sec-title">Tầng 1</div>
+    <div class="sec-heading">Agent identification</div>
+    <div class="sec-sub">Enter your credentials to proceed</div>
+
+    <div class="field-group">
+      <span class="field-label">AGENT ID</span>
+      <div class="field field-active">
+        <span class="field-value">ALPHA</span>
+      </div>
+      <div class="char-count">5 / 5</div>
+    </div>
+
+    <div class="field-group">
+      <span class="field-label">PASSPHRASE</span>
+      <div class="field" style="position:relative">
+        <span class="field-value">••••••••••</span>
+        <span class="field-eye">◉</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px"></div>
+
+    <div class="btn-primary">INITIATE AUTHENTICATION</div>
+
+    <div style="font-size:10px;letter-spacing:1px;color:#333;text-align:center;line-height:1.7">
+      3 consecutive failed attempts will trigger<br>self-destruct protocol
+    </div>
+
+    <div class="screen-footer">
+      <span class="footer-text">AVL BADGE · PROTOCOL A-17 · SECURE CHANNEL ESTABLISHED</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 1A — AUTH FAILED
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 1A · Auth Failed (Attempt 1–2)</div>
+  <div class="screen">
+    <div class="statusbar">
+      <span class="avl-mark">A · V · L</span>
+      <div class="net-indicator">
+        <span class="dot dot-green"></span>
+        <span style="font-size:10px;letter-spacing:1px;color:#444">SECURE</span>
+      </div>
+    </div>
+
+    <div class="layer-badge">PROTOCOL A-17 · LAYER 1 OF 3</div>
+
+    <div class="sec-title">Tầng 1</div>
+    <div class="sec-heading">Agent identification</div>
+    <div class="sec-sub">Enter your credentials to proceed</div>
+
+    <div class="warn-box">
+      <div class="warn-text">⚠ INVALID CREDENTIALS — AUTHENTICATION REJECTED</div>
+    </div>
+
+    <div class="warn-box" style="background:#0d0000;border-color:#3a0000">
+      <div class="warn-text" style="color:#cc2222">⚠ WARNING: 2 attempts remaining before protocol activation</div>
+    </div>
+
+    <div class="field-group">
+      <span class="field-label">AGENT ID</span>
+      <div class="field field-error">
+        <span class="field-placeholder">_____</span>
+      </div>
+      <div class="char-count">0 / 5</div>
+    </div>
+
+    <div class="field-group">
+      <span class="field-label">PASSPHRASE</span>
+      <div class="field field-error" style="position:relative">
+        <span class="field-placeholder">Enter passphrase</span>
+        <span class="field-eye">◉</span>
+      </div>
+    </div>
+
+    <div class="btn-primary" style="margin-top:8px">INITIATE AUTHENTICATION</div>
+
+    <div class="screen-footer">
+      <span class="footer-text">AVL BADGE · PROTOCOL A-17 · SECURE CHANNEL ESTABLISHED</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 1B — SELF-DESTRUCT
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 1B · Self-Destruct</div>
+  <div class="screen" style="padding:0">
+    <div class="terminate-bg"></div>
+    <div style="position:relative;z-index:2;text-align:center;padding:48px 36px">
+      <div style="font-size:10px;letter-spacing:4px;color:#2a0000;margin-bottom:32px">A · V · L</div>
+      <div style="font-size:12px;letter-spacing:3px;color:#cc0000;margin-bottom:16px">PROTOCOL BREACH DETECTED</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:#f0f0f0;letter-spacing:4px;margin-bottom:8px">SELF-DESTRUCT</div>
+      <div style="font-size:11px;letter-spacing:3px;color:#666;margin-bottom:32px">SEQUENCE ACTIVATED</div>
+
+      <div class="countdown-huge">3</div>
+
+      <div style="font-size:11px;letter-spacing:2px;color:#444;margin-top:8px">SYSTEM WIPING IN PROGRESS</div>
+
+      <div style="margin-top:40px;font-size:10px;letter-spacing:1px;color:#2a0000;line-height:1.8">
+        ALL DATA BEING PURGED<br>
+        ALL SESSIONS TERMINATED<br>
+        NO TRACE REMAINING
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 2 — XCODE VERIFICATION
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 2 · XCODE Verification</div>
+  <div class="screen">
+    <div class="statusbar">
+      <span class="avl-mark">A · V · L</span>
+      <div class="net-indicator">
+        <span class="dot dot-green"></span>
+        <span style="font-size:10px;letter-spacing:1px;color:#444">SECURE</span>
+      </div>
+    </div>
+
+    <div class="layer-badge">PROTOCOL A-17 · LAYER 2 OF 3</div>
+
+    <div class="sec-title">Tầng 2</div>
+    <div class="sec-heading">XCODE verification</div>
+    <div class="sec-sub">Code transmitted to your encrypted device</div>
+
+    <div class="timer-large timer-green">00:38</div>
+
+    <div style="font-size:10px;letter-spacing:1px;color:#555;margin-bottom:24px;text-align:center">CODE EXPIRES IN 00:38 · DO NOT SHARE</div>
+
+    <div class="field-group">
+      <span class="field-label">XCODE</span>
+      <div class="field field-active" style="font-size:20px;letter-spacing:6px;justify-content:center">
+        <span class="field-value">284 ___</span>
+      </div>
+    </div>
+
+    <div class="btn-primary" style="margin-top:8px">VERIFY XCODE</div>
+
+    <div class="divider"></div>
+    <div class="divider-label">PROMAX AGENTS — BIOMETRIC OPTION</div>
+
+    <div class="btn-ghost">FACIAL RECOGNITION SCAN</div>
+    <div class="btn-ghost">FINGERPRINT AUTHENTICATION</div>
+
+    <div class="screen-footer">
+      <span class="footer-text">AVL BADGE · PROTOCOL A-17 · LAYER 2</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 2A — XCODE TIMEOUT
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 2A · XCODE Timeout</div>
+  <div class="screen" style="background:#0a0000">
+    <div class="statusbar" style="border-bottom-color:#1a0000">
+      <span class="avl-mark">A · V · L</span>
+      <div class="net-indicator">
+        <span class="dot dot-red"></span>
+        <span style="font-size:10px;letter-spacing:1px;color:#3a2222">TERMINATED</span>
+      </div>
+    </div>
+
+    <div style="font-size:40px;color:#3a0000;margin-bottom:16px;text-align:center">!</div>
+
+    <div class="sec-title">Session expired</div>
+    <div class="sec-heading" style="color:var(--red)">XCODE window closed</div>
+    <div class="sec-sub">
+      For security, this session has been terminated.<br>
+      You must restart authentication from Layer 1.
+    </div>
+
+    <div class="timer-large" style="color:#2a0000">00:00</div>
+
+    <div style="width:100%;height:1px;background:#1a0000;margin:24px 0"></div>
+
+    <div class="btn-outline">RESTART AUTHENTICATION</div>
+
+    <div style="font-size:10px;letter-spacing:1px;color:#2a0000;text-align:center;margin-top:16px;line-height:1.8">
+      SESSION LOG CLEARED<br>NO DATA RETAINED
+    </div>
+
+    <div class="screen-footer" style="border-top-color:#1a0000">
+      <span class="footer-text" style="color:#1a0000">ANTI-VILLAIN LEAGUE — CLASSIFIED</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 2C — BIOMETRIC (PROMAX)
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 2C · Biometric (PROMAX)</div>
+  <div class="screen">
+    <div class="statusbar">
+      <span class="avl-mark">A · V · L</span>
+      <div class="net-indicator">
+        <span class="dot dot-green"></span>
+        <span style="font-size:10px;letter-spacing:1px;color:#444">SECURE</span>
+      </div>
+    </div>
+
+    <div class="layer-badge">PROTOCOL A-17 · LAYER 2 · PROMAX</div>
+
+    <div class="sec-title">Tầng 2 — Biometric</div>
+    <div class="sec-heading" style="margin-bottom:20px">Biometric authentication</div>
+
+    <div class="tabs">
+      <div class="tab tab-active">FACE SCAN</div>
+      <div class="tab">FINGERPRINT</div>
+    </div>
+
+    <div class="bio-frame">
+      <div class="corner c-tl"></div>
+      <div class="corner c-tr"></div>
+      <div class="corner c-bl"></div>
+      <div class="corner c-br"></div>
+      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="26" cy="20" r="10" stroke="#2a2a2a" stroke-width="1.5"/>
+        <path d="M8 46c0-9.941 8.059-18 18-18s18 8.059 18 18" stroke="#2a2a2a" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="scan-bar"></div>
+    </div>
+
+    <div style="font-size:10px;letter-spacing:2px;color:#555;margin-bottom:8px;text-align:center">ALIGN FACE WITHIN FRAME</div>
+
+    <div class="timer-large timer-amber" style="font-size:36px;margin:12px 0">00:31</div>
+
+    <div class="btn-primary">CONFIRM BIOMETRIC</div>
+    <div class="btn-ghost">← USE XCODE INSTEAD</div>
+
+    <div class="screen-footer">
+      <span class="footer-text">AVL BADGE · PROTOCOL A-17 · LAYER 2 · PROMAX</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 3 — NETWORK DISRUPTED
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 3 · Network Disrupted (Overlay)</div>
+  <div class="screen" style="padding:0;position:relative">
+
+    <!-- Background (blurred previous screen) -->
+    <div style="position:absolute;inset:0;background:var(--bg);opacity:0.9"></div>
+
+    <!-- The overlay modal -->
+    <div class="modal-bg">
+      <div class="modal-box">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:16px">
+          <path d="M3 9c4.133-3.333 8.467-5 13-5s8.867 1.667 13 5" stroke="#e63030" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8 15c2.8-2.333 5.733-3.5 8.75-3.5s5.95 1.167 8.75 3.5" stroke="#e63030" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M14 21c1.333-1.333 2.733-2 4.2-2s2.867.667 4.2 2" stroke="#e63030" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="4" y1="32" x2="32" y2="4" stroke="#e63030" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="18" cy="28" r="2" fill="#e63030"/>
+        </svg>
+
+        <div style="font-size:11px;letter-spacing:3px;color:#e63030;margin-bottom:8px">NETWORK DISRUPTED</div>
+        <div style="font-size:12px;color:#666;letter-spacing:1px;margin-bottom:20px;line-height:1.6">Attempting reconnection...</div>
+
+        <div style="width:100%;height:2px;background:#1a1a1a;margin-bottom:20px;overflow:hidden;position:relative">
+          <div style="height:100%;background:#e63030;width:55%;position:absolute;left:0"></div>
+        </div>
+
+        <div class="btn-outline" style="font-size:10px;margin-bottom:8px">→ ENTER STEALTH MODE</div>
+        <div class="btn-ghost" style="font-size:10px">RETRY CONNECTION</div>
+      </div>
+    </div>
+
+    <!-- Status bar still visible -->
+    <div class="statusbar" style="position:absolute;top:0;z-index:10">
+      <span class="avl-mark">A · V · L</span>
+      <div class="net-indicator">
+        <span class="dot dot-red"></span>
+        <span style="font-size:10px;letter-spacing:1px;color:#555">DISRUPTED</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 3S — STEALTH MODE
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 3S · Stealth Mode</div>
+  <div class="screen stealth-screen">
+    <div style="font-size:10px;letter-spacing:6px;color:#1a1a1a;margin-bottom:48px;text-align:center">A · V · L</div>
+
+    <div style="font-size:14px;letter-spacing:6px;color:#2a2a2a;margin-bottom:16px;text-align:center">STEALTH MODE</div>
+    <div style="font-size:10px;letter-spacing:2px;color:#1a1a1a;text-align:center;line-height:2">
+      ALL TRANSMISSIONS SUSPENDED<br>
+      AWAITING SECURE CHANNEL
+    </div>
+
+    <div class="stealth-pulse">
+      <div class="stealth-dot"></div>
+    </div>
+
+    <div style="font-size:10px;letter-spacing:2px;color:#1a1a1a;text-align:center;margin-top:16px;line-height:2">
+      IDENTITY CONCEALED<br>
+      LOCATION MASKED<br>
+      SIGNAL BLOCKED
+    </div>
+
+    <div style="position:absolute;bottom:24px;left:0;right:0;text-align:center">
+      <div style="font-size:10px;letter-spacing:2px;color:#181818">AUTO-RECONNECT ACTIVE</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 4 — AUTH SUCCESS
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 4 · Authentication Success</div>
+  <div class="screen">
+    <div class="statusbar">
+      <span class="avl-mark">A · V · L</span>
+      <div class="net-indicator">
+        <span class="dot dot-green"></span>
+        <span style="font-size:10px;letter-spacing:1px;color:#22c55e">SECURE</span>
+      </div>
+    </div>
+
+    <div class="success-ring">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <path d="M10 20l8 8 14-14" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div style="font-size:10px;letter-spacing:4px;color:#22c55e;margin-bottom:8px;text-align:center">IDENTITY CONFIRMED</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:#f0f0f0;letter-spacing:2px;text-align:center;margin-bottom:24px">ACCESS GRANTED</div>
+
+    <div style="width:100%;height:1px;background:#1a1a1a;margin-bottom:24px"></div>
+
+    <div style="font-size:10px;letter-spacing:2px;color:#555;text-align:center;margin-bottom:6px">WELCOME, AGENT</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:#e63030;letter-spacing:6px;text-align:center;margin-bottom:16px">PHANTOM-7</div>
+
+    <div class="clearance-badge">
+      <span class="clr-item">CLEARANCE: ALPHA-7</span>
+      <span style="color:#2a2a2a">·</span>
+      <span class="clr-item">PROMAX</span>
+      <span style="color:#2a2a2a">·</span>
+      <span class="clr-item">ACTIVE</span>
+    </div>
+
+    <div style="font-size:10px;letter-spacing:1px;color:#2a2a2a;text-align:center;margin-top:28px">REDIRECTING TO SECURE DASHBOARD...</div>
+
+    <div class="progress-wrap">
+      <div class="progress-fill progress-fill-green" style="width:65%"></div>
+    </div>
+
+    <div class="screen-footer">
+      <span class="footer-text">ALL 3 LAYERS VERIFIED · SESSION ACTIVE</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 5 — FORCE TERMINATION
+     ════════════════════════════════════════════ -->
+<div class="frame">
+  <div class="label">Screen 5 · Forced Session Termination</div>
+  <div class="screen" style="padding:0">
+    <div class="terminate-bg"></div>
+    <div style="position:relative;z-index:2;text-align:center;padding:48px 36px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%">
+
+      <div style="font-size:10px;letter-spacing:6px;color:#2a0000;margin-bottom:48px">A · V · L</div>
+
+      <div style="font-size:12px;letter-spacing:4px;color:#e63030;margin-bottom:24px">SESSION TERMINATED</div>
+
+      <div style="width:80%;height:1px;background:#2a0000;margin-bottom:24px"></div>
+
+      <div class="reason-box">
+        <div class="reason-label">REASON CODE</div>
+        <div class="reason-value">ANOMALY DETECTED</div>
+      </div>
+
+      <div style="font-size:10px;letter-spacing:2px;color:#2a0000;line-height:2;margin:24px 0">
+        NO TRACE REMAINING<br>
+        RECORD PURGED<br>
+        SESSION LOG CLEARED
+      </div>
+
+      <div style="width:80%;height:1px;background:#2a0000;margin-bottom:32px"></div>
+
+      <div class="btn-outline" style="max-width:260px">REINITIATE PROTOCOL</div>
+
+      <div style="font-size:10px;letter-spacing:1px;color:#1a0000;margin-top:24px">AUTO-WIPE IN 10 SECONDS</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
