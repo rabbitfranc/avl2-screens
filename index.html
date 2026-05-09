@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AVL · BLACKSITE — Protocol A-17</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   TOKENS
+   ============================================ */
+:root{
+  /* Backgrounds */
+  --bg-void:#050506; --bg-base:#0A0A0C; --bg-elevated:#111114;
+  --bg-raised:#1A1A1F; --bg-overlay:rgba(0,0,0,.9);
+  /* Borders */
+  --border-subtle:#1F1F25; --border-default:#2A2A32; --border-strong:#3D3D48;
+  /* Red AVL */
+  --red-900:#4A0E14; --red-700:#8B0E1F; --red-500:#DC2626;
+  --red-400:#EF4444; --red-100:#FEE2E2;
+  /* Mint terminal */
+  --mint-500:#00D9A3; --mint-300:#4DFFCC; --mint-900:#003D2E;
+  /* Semantic */
+  --warning:#F5B544; --danger:var(--red-500); --success:var(--mint-500);
+  /* Text */
+  --text-primary:#F4F4F5; --text-secondary:#A1A1AA;
+  --text-tertiary:#52525B; --text-disabled:#27272A;
+  --text-mono:var(--mint-500); --text-redacted:var(--red-500);
+  /* Fonts */
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg-base);color:var(--text-primary);
+  font-family:var(--font-body);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;}
+body{padding:48px 24px 96px;}
+
+/* Global scanline + noise */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent 0,transparent 2px,
+  rgba(255,255,255,.025) 2px,rgba(255,255,255,.025) 3px);}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;
+  opacity:.04;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");}
+
+/* Layout */
+.wrap{max-width:1280px;margin:0 auto;}
+.page-title{font-family:var(--font-display);font-size:40px;font-weight:600;
+  letter-spacing:-.02em;margin-bottom:8px;}
+.page-sub{color:var(--text-secondary);margin-bottom:48px;
+  font-family:var(--font-mono);font-size:13px;letter-spacing:.05em;
+  text-transform:uppercase;}
+.page-sub::before{content:"// ";color:var(--red-500);}
+
+.section{margin:64px 0 32px;padding-top:24px;border-top:1px solid var(--border-subtle);}
+.section-num{font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--red-500);margin-bottom:8px;}
+.section-h{font-family:var(--font-display);font-size:24px;font-weight:600;
+  letter-spacing:-.01em;margin-bottom:20px;}
+
+.grid{display:grid;gap:16px;}
+.grid-4{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}
+.grid-3{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));}
+.grid-screens{grid-template-columns:repeat(auto-fill,minmax(390px,390px));
+  justify-content:center;gap:32px;}
+
+/* ============================================
+   TOKEN CARDS
+   ============================================ */
+.swatch{background:var(--bg-elevated);border:1px solid var(--border-subtle);
+  border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:8px;}
+.swatch .chip{height:56px;border-radius:2px;border:1px solid var(--border-subtle);}
+.swatch .name{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);}
+.swatch .hex{font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);}
+
+.type-card{background:var(--bg-elevated);border:1px solid var(--border-subtle);
+  border-radius:4px;padding:20px;}
+.type-card .meta{font-family:var(--font-mono);font-size:11px;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--text-tertiary);
+  margin-bottom:12px;}
+.type-card .sample{color:var(--text-primary);}
+
+/* ============================================
+   PHONE FRAMES
+   ============================================ */
+.phone{width:390px;height:820px;background:var(--bg-base);
+  border:1px solid var(--border-default);border-radius:6px;overflow:hidden;
+  position:relative;display:flex;flex-direction:column;
+  font-family:var(--font-body);}
+.phone-label{font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--text-tertiary);margin-bottom:8px;
+  text-align:center;}
+.phone-label b{color:var(--red-500);}
+
+/* Inner scanline (per-phone, lighter) */
+.phone::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:50;
+  background:repeating-linear-gradient(0deg,transparent 0,transparent 2px,
+  rgba(255,255,255,.02) 2px,rgba(255,255,255,.02) 3px);}
+
+/* Phone header */
+.ph-header{display:flex;justify-content:space-between;align-items:center;
+  padding:20px 24px 16px;border-bottom:1px solid var(--border-subtle);}
+.ph-logo{display:flex;align-items:center;gap:8px;}
+.ph-logo svg{width:22px;height:22px;}
+.ph-logo span{font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;
+  color:var(--text-primary);font-weight:500;}
+.ph-protocol{font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;
+  color:var(--text-tertiary);text-align:right;line-height:1.4;}
+.ph-protocol b{color:var(--text-primary);font-weight:500;}
+.ph-dots{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle;}
+.ph-dots i{width:5px;height:5px;border-radius:50%;background:var(--border-strong);
+  display:inline-block;}
+.ph-dots i.on{background:var(--red-500);}
+
+/* Phone body */
+.ph-body{flex:1;padding:24px;display:flex;flex-direction:column;gap:20px;
+  overflow:hidden;}
+.ph-title{font-family:var(--font-display);font-size:24px;font-weight:600;
+  letter-spacing:-.01em;line-height:1.15;}
+.ph-desc{color:var(--text-secondary);font-size:14px;}
+
+.divider{height:1px;background:var(--border-subtle);margin:4px 0;}
+
+/* Form */
+.field{display:flex;flex-direction:column;gap:8px;}
+.field-label{display:flex;justify-content:space-between;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--text-tertiary);}
+.field-label .count{color:var(--text-secondary);}
+.input{height:52px;background:var(--bg-elevated);
+  border:1px solid var(--border-default);border-radius:4px;
+  padding:0 16px;display:flex;align-items:center;
+  font-family:var(--font-mono);font-size:18px;letter-spacing:.1em;
+  color:var(--text-primary);position:relative;}
+.input.focus{border-color:var(--mint-500);
+  box-shadow:0 0 0 3px rgba(0,217,163,.15);}
+.input.error{border-color:var(--red-500);
+  box-shadow:0 0 0 3px rgba(220,38,38,.15);
+  animation:shake .3s ease;}
+.input.passphrase{font-family:var(--font-body);font-size:15px;
+  letter-spacing:.3em;justify-content:space-between;}
+.input .eye{color:var(--text-tertiary);font-size:16px;cursor:pointer;}
+.input .caret{display:inline-block;width:2px;height:22px;background:var(--mint-500);
+  margin-left:2px;animation:blink 1s steps(1) infinite;}
+@keyframes blink{50%{opacity:0;}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}
+  75%{transform:translateX(4px);}}
+
+/* Slot input */
+.slots{display:flex;gap:8px;}
+.slot{flex:1;height:56px;background:var(--bg-elevated);
+  border:1px solid var(--border-default);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:22px;font-weight:500;
+  color:var(--text-primary);}
+.slot.filled{border-color:var(--mint-500);color:var(--mint-500);}
+.slot.active{border-color:var(--mint-500);
+  box-shadow:0 0 0 3px rgba(0,217,163,.15);}
+
+/* Buttons */
+.btn{height:48px;border-radius:4px;border:none;cursor:pointer;
+  font-family:var(--font-display);font-weight:600;font-size:14px;
+  letter-spacing:.08em;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:transform .12s ease, box-shadow .2s ease;}
+.btn:hover{transform:scale(1.01);}
+.btn:active{transform:scale(.99);}
+.btn-primary{background:var(--red-500);color:#fff;
+  box-shadow:0 0 0 0 rgba(220,38,38,.5);}
+.btn-primary:hover{background:var(--red-400);
+  box-shadow:0 0 0 4px rgba(220,38,38,.15);}
+.btn-secondary{background:transparent;border:1px solid var(--border-strong);
+  color:var(--text-primary);}
+.btn-ghost{background:transparent;color:var(--text-secondary);}
+.btn-destructive{background:transparent;border:1px solid var(--red-500);
+  color:var(--red-500);}
+.btn-disabled{opacity:.3;cursor:not-allowed;}
+
+/* Alerts */
+.alert{padding:14px 16px;border-radius:4px;display:flex;gap:12px;
+  font-size:14px;line-height:1.45;border-left:3px solid;}
+.alert-icon{flex-shrink:0;font-family:var(--font-mono);font-weight:700;
+  font-size:14px;width:18px;text-align:center;}
+.alert-title{font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;
+  text-transform:uppercase;font-weight:500;margin-bottom:4px;}
+.alert-body{color:var(--text-secondary);font-size:13px;}
+.alert-danger{background:rgba(74,14,20,.4);border-color:var(--red-500);}
+.alert-danger .alert-icon,.alert-danger .alert-title{color:var(--red-400);}
+.alert-warning{background:rgba(61,45,14,.4);border-color:var(--warning);}
+.alert-warning .alert-icon,.alert-warning .alert-title{color:var(--warning);}
+.alert-info{background:var(--bg-elevated);border-color:var(--border-strong);}
+.alert-info .alert-icon{color:var(--text-secondary);}
+.alert-success{background:rgba(0,61,46,.4);border-color:var(--mint-500);}
+.alert-success .alert-icon,.alert-success .alert-title{color:var(--mint-500);}
+
+/* Stamp */
+.stamp{display:inline-flex;align-items:center;justify-content:center;
+  border:1.5px solid;border-radius:2px;padding:6px 14px;
+  font-family:var(--font-mono);font-size:12px;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;
+  transform:rotate(-3deg);position:relative;}
+.stamp-red{color:var(--red-500);border-color:var(--red-500);}
+.stamp-mint{color:var(--mint-500);border-color:var(--mint-500);
+  transform:rotate(2deg);}
+.stamp-amber{color:var(--warning);border-color:var(--warning);transform:rotate(-2deg);}
+.stamp-lg{font-size:18px;padding:14px 24px;letter-spacing:.25em;}
+.stamp-xl{font-size:24px;padding:18px 32px;letter-spacing:.25em;}
+
+/* Corner bracket frame */
+.bracket{position:relative;padding:20px;}
+.bracket::before,.bracket::after,
+.bracket > .br-tl,.bracket > .br-tr,.bracket > .br-bl,.bracket > .br-br{
+  content:"";position:absolute;width:14px;height:14px;
+  border:1.5px solid var(--red-500);}
+.bracket::before{top:0;left:0;border-right:none;border-bottom:none;}
+.bracket::after{top:0;right:0;border-left:none;border-bottom:none;}
+.bracket > .br-bl{bottom:0;left:0;border-right:none;border-top:none;}
+.bracket > .br-br{bottom:0;right:0;border-left:none;border-top:none;}
+.bracket-mint::before,.bracket-mint::after,
+.bracket-mint > .br-bl,.bracket-mint > .br-br{border-color:var(--mint-500);}
+.bracket-amber::before,.bracket-amber::after,
+.bracket-amber > .br-bl,.bracket-amber > .br-br{border-color:var(--warning);}
+
+/* Timer */
+.timer{font-family:var(--font-mono);font-weight:500;letter-spacing:.05em;
+  font-variant-numeric:tabular-nums;}
+.timer-mint{color:var(--mint-500);}
+.timer-amber{color:var(--warning);animation:pulse 1.5s ease infinite;}
+.timer-red{color:var(--red-500);animation:pulse 1s ease infinite;}
+@keyframes pulse{50%{opacity:.55;}}
+.progress{height:3px;background:var(--bg-raised);border-radius:1px;overflow:hidden;}
+.progress > i{display:block;height:100%;background:var(--mint-500);}
+.progress.amber > i{background:var(--warning);}
+.progress.red > i{background:var(--red-500);}
+
+/* Mono list */
+.mono-list{display:flex;flex-direction:column;gap:6px;
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.05em;
+  color:var(--text-tertiary);}
+.mono-list b{color:var(--text-secondary);font-weight:500;}
+.mono-list .x{color:var(--red-500);margin-right:8px;}
+.mono-list .ok{color:var(--mint-500);margin-right:8px;}
+
+/* Tabs */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border-subtle);}
+.tab{flex:1;padding:14px 0;text-align:center;
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--text-tertiary);cursor:pointer;
+  border-bottom:2px solid transparent;}
+.tab.active{color:var(--red-500);border-color:var(--red-500);}
+
+/* Footer caption */
+.ph-footer{padding:16px 24px;border-top:1px solid var(--border-subtle);
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--text-tertiary);
+  text-align:center;}
+
+/* Centered overlay */
+.center-stack{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:20px;text-align:center;padding:24px;}
+
+/* Big countdown */
+.countdown{font-family:var(--font-mono);font-weight:700;font-size:96px;
+  line-height:1;letter-spacing:-.02em;color:var(--red-500);
+  font-variant-numeric:tabular-nums;}
+.countdown-mint{color:var(--mint-500);}
+
+/* Vignette */
+.vignette-red{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(220,38,38,.25) 100%);
+  animation:vignette 1s ease infinite;z-index:30;}
+@keyframes vignette{50%{opacity:.4;}}
+
+/* Logo SVG defaults */
+.logo{display:inline-block;}
+.logo .tri{stroke:var(--red-500);stroke-width:2;fill:none;}
+.logo .a{fill:var(--text-primary);}
+
+/* Boot lines */
+.boot-line{font-family:var(--font-mono);font-size:13px;color:var(--mint-500);
+  letter-spacing:.05em;}
+.boot-line .dim{color:var(--text-tertiary);}
+.boot-line .ok{color:var(--mint-500);}
+
+/* Tag dots flow */
+.flow-dots{display:flex;gap:6px;align-items:center;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;
+  color:var(--text-tertiary);text-transform:uppercase;}
+.flow-dots i{width:6px;height:6px;border-radius:50%;background:var(--border-strong);
+  display:inline-block;}
+.flow-dots i.on{background:var(--red-500);}
+.flow-dots i.done{background:var(--mint-500);}
+
+/* Table for diff */
+.diff{width:100%;border-collapse:collapse;
+  background:var(--bg-elevated);border:1px solid var(--border-subtle);
+  border-radius:4px;overflow:hidden;}
+.diff th,.diff td{padding:12px 16px;text-align:left;font-size:13px;
+  border-bottom:1px solid var(--border-subtle);}
+.diff th{font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--text-tertiary);background:var(--bg-base);}
+.diff td.old{color:var(--text-tertiary);text-decoration:line-through;}
+.diff td.new{color:var(--mint-500);}
+
+/* Reusable logo SVG */
+.svg-logo{width:24px;height:24px;}
+
+/* Anchor nav */
+.toc{position:sticky;top:24px;float:right;background:var(--bg-elevated);
+  border:1px solid var(--border-subtle);border-radius:4px;padding:14px 18px;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;display:none;}
+@media(min-width:1400px){.toc{display:block;}}
+.toc a{display:block;color:var(--text-tertiary);text-decoration:none;padding:4px 0;}
+.toc a:hover{color:var(--red-500);}
+</style>
+</head>
+<body>
+
+<!-- Reusable SVG logo -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="avl-logo" viewBox="0 0 32 32">
+      <path class="tri" d="M16 3 L29 28 L3 28 Z" />
+      <text x="16" y="24" text-anchor="middle" class="a"
+        font-family="Space Grotesk" font-size="14" font-weight="700">A</text>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <!-- ============================================
+       HEADER
+       ============================================ -->
+  <header>
+    <div class="page-sub">Anti-Villain League · Protocol A-17 · Build v2.0</div>
+    <h1 class="page-title">BLACKSITE</h1>
+    <p style="color:var(--text-secondary);max-width:640px;">
+      Design system &amp; 11 screens for AVL secure agent authentication.
+      Inspired by classified files, CRT terminals, and military HUDs.
+      Absolute security · Full state coverage · No trace remaining.
+    </p>
+  </header>
+
+  <!-- ============================================
+       01 · COLOR
+       ============================================ -->
+  <section class="section" id="color">
+    <div class="section-num">01 — Color tokens</div>
+    <h2 class="section-h">Palette</h2>
+
+    <h3 style="font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--text-tertiary);margin:16px 0 8px;">
+      Backgrounds</h3>
+    <div class="grid grid-4">
+      <div class="swatch"><div class="chip" style="background:#050506"></div>
+        <span class="name">bg-void</span><span class="hex">#050506</span></div>
+      <div class="swatch"><div class="chip" style="background:#0A0A0C"></div>
+        <span class="name">bg-base</span><span class="hex">#0A0A0C</span></div>
+      <div class="swatch"><div class="chip" style="background:#111114"></div>
+        <span class="name">bg-elevated</span><span class="hex">#111114</span></div>
+      <div class="swatch"><div class="chip" style="background:#1A1A1F"></div>
+        <span class="name">bg-raised</span><span class="hex">#1A1A1F</span></div>
+    </div>
+
+    <h3 style="font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--text-tertiary);margin:24px 0 8px;">
+      Red — Action &amp; alarm</h3>
+    <div class="grid grid-4">
+      <div class="swatch"><div class="chip" style="background:#4A0E14"></div>
+        <span class="name">red-900</span><span class="hex">#4A0E14</span></div>
+      <div class="swatch"><div class="chip" style="background:#8B0E1F"></div>
+        <span class="name">red-700</span><span class="hex">#8B0E1F</span></div>
+      <div class="swatch"><div class="chip" style="background:#DC2626"></div>
+        <span class="name">red-500 ★</span><span class="hex">#DC2626</span></div>
+      <div class="swatch"><div class="chip" style="background:#EF4444"></div>
+        <span class="name">red-400</span><span class="hex">#EF4444</span></div>
+    </div>
+
+    <h3 style="font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--text-tertiary);margin:24px 0 8px;">
+      Mint — Data &amp; confirmation</h3>
+    <div class="grid grid-4">
+      <div class="swatch"><div class="chip" style="background:#003D2E"></div>
+        <span class="name">mint-900</span><span class="hex">#003D2E</span></div>
+      <div class="swatch"><div class="chip" style="background:#00D9A3"></div>
+        <span class="name">mint-500 ★</span><span class="hex">#00D9A3</span></div>
+      <div class="swatch"><div class="chip" style="background:#4DFFCC"></div>
+        <span class="name">mint-300</span><span class="hex">#4DFFCC</span></div>
+      <div class="swatch"><div class="chip" style="background:#F5B544"></div>
+        <span class="name">warning</span><span class="hex">#F5B544</span></div>
+    </div>
+
+    <h3 style="font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--text-tertiary);margin:24px 0 8px;">
+      Text</h3>
+    <div class="grid grid-4">
+      <div class="swatch"><div class="chip" style="background:#F4F4F5"></div>
+        <span class="name">text-primary</span><span class="hex">#F4F4F5</span></div>
+      <div class="swatch"><div class="chip" style="background:#A1A1AA"></div>
+        <span class="name">text-secondary</span><span class="hex">#A1A1AA</span></div>
+      <div class="swatch"><div class="chip" style="background:#52525B"></div>
+        <span class="name">text-tertiary</span><span class="hex">#52525B</span></div>
+      <div class="swatch"><div class="chip" style="background:#27272A"></div>
+        <span class="name">text-disabled</span><span class="hex">#27272A</span></div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       02 · TYPOGRAPHY
+       ============================================ -->
+  <section class="section" id="type">
+    <div class="section-num">02 — Typography</div>
+    <h2 class="section-h">Space Grotesk · Inter · JetBrains Mono</h2>
+    <div class="grid grid-3">
+      <div class="type-card"><div class="meta">display-xl · 40/44 · 600</div>
+        <div class="sample" style="font-family:var(--font-display);font-size:40px;
+          font-weight:600;letter-spacing:-.02em;line-height:1.1;">PROTOCOL OMEGA</div></div>
+      <div class="type-card"><div class="meta">display-lg · 28/32 · 600</div>
+        <div class="sample" style="font-family:var(--font-display);font-size:28px;
+          font-weight:600;letter-spacing:-.01em;line-height:1.15;">Agent identification</div></div>
+      <div class="type-card"><div class="meta">body · 15/22 · 400</div>
+        <div class="sample">Verify credentials to proceed through the secure channel.</div></div>
+      <div class="type-card"><div class="meta">mono-data · 22/28 · 500</div>
+        <div class="sample" style="font-family:var(--font-mono);font-size:22px;
+          font-weight:500;letter-spacing:.05em;color:var(--mint-500);">2 8 4 9 3 7</div></div>
+      <div class="type-card"><div class="meta">mono-tag · 11/14 · 500</div>
+        <div class="sample" style="font-family:var(--font-mono);font-size:11px;
+          letter-spacing:.15em;text-transform:uppercase;color:var(--text-tertiary);">
+          Protocol A-17 · Layer 1 of 3</div></div>
+      <div class="type-card"><div class="meta">stamp · 14/16 · 700</div>
+        <div class="sample"><span class="stamp stamp-red">Classified</span></div></div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       03 · BUTTONS
+       ============================================ -->
+  <section class="section" id="buttons">
+    <div class="section-num">03 — Buttons</div>
+    <h2 class="section-h">Variants &amp; states</h2>
+    <div class="grid grid-3">
+      <button class="btn btn-primary">Authenticate →</button>
+      <button class="btn btn-secondary">Cancel</button>
+      <button class="btn btn-destructive">Abort session</button>
+      <button class="btn btn-ghost">Back</button>
+      <button class="btn btn-primary btn-disabled">Disabled</button>
+      <button class="btn btn-secondary"><span style="color:var(--mint-500);">✓</span> Success</button>
+    </div>
+  </section>
+
+  <!-- ============================================
+       04 · INPUTS
+       ============================================ -->
+  <section class="section" id="inputs">
+    <div class="section-num">04 — Input fields</div>
+    <h2 class="section-h">Default · focus · filled · error</h2>
+    <div class="grid grid-3" style="max-width:760px;">
+      <div class="field"><div class="field-label"><span>Agent ID</span><span class="count">0 / 5</span></div>
+        <div class="input">_ _ _ _ _<span class="caret"></span></div></div>
+      <div class="field"><div class="field-label"><span>Agent ID</span><span class="count">5 / 5</span></div>
+        <div class="input focus" style="color:var(--mint-500);">A L P H A</div></div>
+      <div class="field"><div class="field-label"><span>Passphrase</span></div>
+        <div class="input passphrase">••••••••••<span class="eye">👁</span></div></div>
+      <div class="field"><div class="field-label"><span>XCODE</span><span class="count" style="color:var(--red-400);">Invalid</span></div>
+        <div class="input error" style="color:var(--red-400);">2 8 4 _ _ _</div></div>
+    </div>
+
+    <h3 style="font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--text-tertiary);margin:24px 0 12px;">
+      XCODE — 6-slot input</h3>
+    <div class="slots" style="max-width:380px;">
+      <div class="slot filled">2</div>
+      <div class="slot filled">8</div>
+      <div class="slot filled">4</div>
+      <div class="slot active"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       05 · ALERTS, STAMPS, TIMER
+       ============================================ -->
+  <section class="section" id="misc">
+    <div class="section-num">05 — Alerts · Stamps · Timer</div>
+    <h2 class="section-h">Feedback components</h2>
+
+    <div style="display:flex;flex-direction:column;gap:12px;max-width:760px;">
+      <div class="alert alert-danger">
+        <div class="alert-icon">⨯</div>
+        <div><div class="alert-title">Authentication rejected</div>
+        <div class="alert-body">Invalid credentials. Attempts remaining: 02 / 03.</div></div>
+      </div>
+      <div class="alert alert-warning">
+        <div class="alert-icon">△</div>
+        <div><div class="alert-title">Protocol omega armed</div>
+        <div class="alert-body">3 failed attempts trigger 5-second wipe.</div></div>
+      </div>
+      <div class="alert alert-info">
+        <div class="alert-icon">→</div>
+        <div><div class="alert-title">XCODE transmitted</div>
+        <div class="alert-body">Sent to your encrypted device. Do not share.</div></div>
+      </div>
+      <div class="alert alert-success">
+        <div class="alert-icon">✓</div>
+        <div><div class="alert-title">Identity confirmed</div>
+        <div class="alert-body">Welcome back, Agent Phantom-7.</div></div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--text-tertiary);margin:32px 0 12px;">
+      Stamps</h3>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+      <span class="stamp stamp-red stamp-lg">Classified</span>
+      <span class="stamp stamp-red stamp-lg">Breach</span>
+      <span class="stamp stamp-mint stamp-lg">Promax ✓</span>
+      <span class="stamp stamp-mint stamp-lg">Access granted</span>
+      <span class="stamp stamp-amber stamp-lg">Warning</span>
+    </div>
+
+    <h3 style="font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--text-tertiary);margin:32px 0 12px;">
+      Timer states</h3>
+    <div class="grid grid-3" style="max-width:760px;">
+      <div>
+        <div class="timer timer-mint" style="font-size:36px;">00:38</div>
+        <div class="progress" style="margin-top:8px;"><i style="width:78%"></i></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);
+          margin-top:6px;letter-spacing:.1em;">SAFE · &gt; 30s</div>
+      </div>
+      <div>
+        <div class="timer timer-amber" style="font-size:36px;">00:21</div>
+        <div class="progress amber" style="margin-top:8px;"><i style="width:46%"></i></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);
+          margin-top:6px;letter-spacing:.1em;">WARN · 15–30s</div>
+      </div>
+      <div>
+        <div class="timer timer-red" style="font-size:36px;">00:08</div>
+        <div class="progress red" style="margin-top:8px;"><i style="width:18%"></i></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);
+          margin-top:6px;letter-spacing:.1em;">CRIT · &lt; 15s</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       06 · SCREENS
+       ============================================ -->
+  <section class="section" id="screens">
+    <div class="section-num">06 — All screens · 390 × 820</div>
+    <h2 class="section-h">11 frames</h2>
+
+    <div class="grid grid-screens">
+
+      <!-- ===== 0 · BOOT ===== -->
+      <div>
+        <div class="phone-label">0 · <b>System boot</b></div>
+        <div class="phone" style="background:var(--bg-void);">
+          <div class="center-stack">
+            <svg class="logo" width="72" height="72" viewBox="0 0 32 32"
+              style="filter:drop-shadow(0 0 12px rgba(0,217,163,.4));">
+              <path d="M16 3 L29 28 L3 28 Z" fill="none" stroke="#DC2626" stroke-width="2"/>
+              <text x="16" y="24" text-anchor="middle" fill="#F4F4F5"
+                font-family="Space Grotesk" font-size="14" font-weight="700">A</text>
+            </svg>
+            <div>
+              <div style="font-family:var(--font-display);font-size:24px;
+                font-weight:600;letter-spacing:.3em;">A · V · L</div>
+              <div style="font-family:var(--font-mono);font-size:10px;
+                letter-spacing:.25em;color:var(--text-tertiary);
+                text-transform:uppercase;margin-top:4px;">Anti-Villain League</div>
+            </div>
+            <div class="divider" style="width:80%;"></div>
+            <div style="text-align:left;width:100%;display:flex;
+              flex-direction:column;gap:8px;">
+              <div class="boot-line"><span class="dim">&gt;</span> INITIALIZING SECURE CHANNEL</div>
+              <div class="boot-line"><span class="dim">&gt;</span> ENCRYPTION HANDSHAKE <span class="dim">........</span> <span class="ok">OK</span></div>
+              <div class="boot-line"><span class="dim">&gt;</span> LOCATION MASKED <span class="dim">.............</span> <span class="ok">OK</span></div>
+              <div class="boot-line"><span class="dim">&gt;</span> IDENTITY PROTOCOLS ARMED <span class="dim">....</span> <span class="ok">OK</span></div>
+              <div class="boot-line"><span class="dim">&gt;</span> AWAITING AGENT<span class="caret"></span></div>
+            </div>
+          </div>
+          <div style="padding:0 0 32px;display:flex;justify-content:center;">
+            <span class="stamp stamp-red">Protocol A-17 active</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 1 · IDENTIFY ===== -->
+      <div>
+        <div class="phone-label">1 · <b>Agent identification</b></div>
+        <div class="phone">
+          <div class="ph-header">
+            <div class="ph-logo">
+              <svg viewBox="0 0 32 32"><path d="M16 3 L29 28 L3 28 Z" fill="none" stroke="#DC2626" stroke-width="2"/><text x="16" y="24" text-anchor="middle" fill="#F4F4F5" font-family="Space Grotesk" font-size="14" font-weight="700">A</text></svg>
+              <span>AVL</span>
+            </div>
+            <div class="ph-protocol">
+              <b>PROTOCOL A-17</b><span class="ph-dots"><i class="on"></i><i></i><i></i></span><br>
+              LAYER 1 / 3
+            </div>
+          </div>
+          <div class="ph-body">
+            <div>
+              <div class="ph-title">Agent identification</div>
+              <div class="ph-desc" style="margin-top:6px;">Verify credentials to proceed.</div>
+            </div>
+            <div class="divider"></div>
+            <div class="field">
+              <div class="field-label"><span>Agent ID</span><span class="count">0 / 5</span></div>
+              <div class="input">_ _ _ _ _<span class="caret"></span></div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Passphrase</span></div>
+              <div class="input passphrase" style="color:var(--text-tertiary);">Enter passphrase<span class="eye">👁</span></div>
+            </div>
+            <div class="alert alert-warning">
+              <div class="alert-icon">△</div>
+              <div><div class="alert-title">Protocol omega armed</div>
+              <div class="alert-body">3 failed attempts · 5-second wipe.</div></div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:auto;">Authenticate →</button>
+          </div>
+          <div class="ph-footer">Encrypted · No logs · No trace</div>
+        </div>
+      </div>
+
+      <!-- ===== 1A · AUTH FAILED ===== -->
+      <div>
+        <div class="phone-label">1A · <b>Auth failed</b> (attempt 1–2)</div>
+        <div class="phone">
+          <div class="ph-header">
+            <div class="ph-logo">
+              <svg viewBox="0 0 32 32"><path d="M16 3 L29 28 L3 28 Z" fill="none" stroke="#DC2626" stroke-width="2"/><text x="16" y="24" text-anchor="middle" fill="#F4F4F5" font-family="Space Grotesk" font-size="14" font-weight="700">A</text></svg>
+              <span>AVL</span>
+            </div>
+            <div class="ph-protocol">
+              <b>PROTOCOL A-17</b><span class="ph-dots"><i class="on"></i><i></i><i></i></span><br>
+              LAYER 1 / 3
+            </div>
+          </div>
+          <div class="ph-body">
+            <div>
+              <div class="ph-title">Agent identification</div>
+              <div class="ph-desc" style="margin-top:6px;">Verify credentials to proceed.</div>
+            </div>
+            <div class="bracket" style="background:rgba(74,14,20,.25);">
+              <span class="br-bl"></span><span class="br-br"></span>
+              <div style="display:flex;gap:12px;">
+                <div style="color:var(--red-400);font-family:var(--font-mono);
+                  font-weight:700;font-size:18px;">⨯</div>
+                <div>
+                  <div style="font-family:var(--font-mono);font-size:12px;
+                    letter-spacing:.1em;text-transform:uppercase;color:var(--red-400);">
+                    Authentication rejected</div>
+                  <div style="color:var(--text-secondary);font-size:13px;margin:6px 0 10px;">
+                    Invalid credentials.</div>
+                  <div style="font-family:var(--font-mono);font-size:14px;
+                    letter-spacing:.1em;color:var(--red-400);font-weight:500;">
+                    ATTEMPTS REMAINING · 02 / 03</div>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Agent ID</span><span class="count">0 / 5</span></div>
+              <div class="input error">_ _ _ _ _</div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Passphrase</span></div>
+              <div class="input passphrase error" style="color:var(--text-tertiary);">Enter passphrase<span class="eye">👁</span></div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:auto;">Retry authentication →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 1B · OMEGA ===== -->
+      <div>
+        <div class="phone-label">1B · <b>Protocol omega</b> (self-destruct)</div>
+        <div class="phone" style="background:var(--bg-void);">
+          <div class="vignette-red"></div>
+          <div class="center-stack">
+            <span class="stamp stamp-red stamp-lg">Breach detected</span>
+            <div style="font-family:var(--font-display);font-size:32px;font-weight:700;
+              color:var(--red-500);letter-spacing:.05em;">PROTOCOL OMEGA</div>
+            <div style="color:var(--text-secondary);font-size:14px;">System wipe initiated</div>
+            <div class="bracket" style="padding:24px 36px;margin:8px 0;">
+              <span class="br-bl"></span><span class="br-br"></span>
+              <div class="countdown">5</div>
+            </div>
+            <div class="progress red" style="width:80%;height:4px;">
+              <i style="width:80%"></i>
+            </div>
+            <div class="divider" style="width:80%;"></div>
+            <div class="mono-list" style="text-align:left;">
+              <div><span class="x">⨯</span> ALL DATA BEING PURGED</div>
+              <div><span class="x">⨯</span> ALL SESSIONS TERMINATED</div>
+              <div><span class="x">⨯</span> NO TRACE REMAINING</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 2 · XCODE ===== -->
+      <div>
+        <div class="phone-label">2 · <b>XCODE verification</b></div>
+        <div class="phone">
+          <div class="ph-header">
+            <div class="ph-logo">
+              <svg viewBox="0 0 32 32"><path d="M16 3 L29 28 L3 28 Z" fill="none" stroke="#DC2626" stroke-width="2"/><text x="16" y="24" text-anchor="middle" fill="#F4F4F5" font-family="Space Grotesk" font-size="14" font-weight="700">A</text></svg>
+              <span>AVL</span>
+            </div>
+            <div class="ph-protocol">
+              <b>PROTOCOL A-17</b><span class="ph-dots"><i class="done"></i><i class="on"></i><i></i></span><br>
+              LAYER 2 / 3
+            </div>
+          </div>
+          <div class="ph-body">
+            <div>
+              <div class="ph-title">XCODE verification</div>
+              <div class="ph-desc" style="margin-top:6px;">Code transmitted to encrypted device.</div>
+            </div>
+            <div class="bracket bracket-mint" style="text-align:center;padding:24px;">
+              <span class="br-bl"></span><span class="br-br"></span>
+              <div class="timer timer-mint" style="font-size:48px;">00:45</div>
+              <div class="progress" style="margin-top:14px;"><i style="width:100%"></i></div>
+              <div style="font-family:var(--font-mono);font-size:10px;
+                letter-spacing:.2em;text-transform:uppercase;color:var(--text-tertiary);
+                margin-top:10px;">CODE EXPIRES · DO NOT SHARE</div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Enter XCODE</span></div>
+              <div class="slots">
+                <div class="slot filled">2</div>
+                <div class="sl
