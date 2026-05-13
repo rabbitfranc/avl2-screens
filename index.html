@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Input Components — Design System</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+<style>
+
+/* ================================================
+   DESIGN TOKENS — Color + Typography
+   (Tương đương Variables trong Figma)
+================================================ */
+:root {
+  /* Backgrounds */
+  --bg-void:      #050506;
+  --bg-base:      #0A0A0C;
+  --bg-elevated:  #111114;
+  --bg-raised:    #1A1A1F;
+
+  /* Red */
+  --red-900: #4A0E14;
+  --red-700: #8B0E1F;
+  --red-500: #DC2626;
+  --red-400: #EF4444;
+
+  /* Mint */
+  --mint-900: #003D2E;
+  --mint-500: #00D9A3;
+  --mint-300: #4DFFCC;
+
+  /* Warning */
+  --warning: #F5B544;
+
+  /* Text */
+  --text-primary:   #F4F4F5;
+  --text-secondary: #A1A1AA;
+  --text-tertiary:  #52525B;
+  --text-disabled:  #27272A;
+
+  /* Input semantic tokens */
+  --input-bg:             #1A1A1F;
+  --input-bg-hover:       #1F1F26;
+  --input-bg-disabled:    #0F0F12;
+  --input-bg-readonly:    #13131A;
+  --input-border:         #3F3F46;
+  --input-border-hover:   #71717A;
+  --input-border-focus:   #00D9A3;
+  --input-border-error:   #DC2626;
+  --input-border-success: #00D9A3;
+  --input-border-readonly:#2D2D35;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Typography */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+}
+
+/* ================================================
+   RESET
+================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 22px;
+  padding: 48px 32px;
+  min-height: 100vh;
+}
+button { font-family: inherit; }
+
+/* ================================================
+   PAGE LAYOUT
+================================================ */
+.page-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--red-500);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.page-subtitle { color: var(--text-secondary); margin-bottom: 56px; }
+
+.section { margin-bottom: 72px; }
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--mint-500);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--bg-raised);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+.demo-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--bg-raised);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.divider {
+  height: 1px;
+  background: var(--bg-raised);
+  margin: 56px 0;
+}
+
+/* ================================================
+   STATE BADGE (demo label)
+================================================ */
+.state-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+.badge-default  { background: var(--bg-raised); color: var(--text-tertiary); }
+.badge-hover    { background: rgba(113,113,122,.15); color: var(--text-secondary); }
+.badge-focus    { background: rgba(0,217,163,.12); color: var(--mint-500); }
+.badge-filled   { background: rgba(244,244,245,.08); color: var(--text-primary); }
+.badge-error    { background: rgba(220,38,38,.12); color: var(--red-400); }
+.badge-success  { background: rgba(0,217,163,.12); color: var(--mint-500); }
+.badge-disabled { background: rgba(39,39,42,.6); color: var(--text-disabled); }
+.badge-readonly { background: rgba(45,45,53,.6); color: var(--text-tertiary); }
+.badge-warning  { background: rgba(245,181,68,.12); color: var(--warning); }
+
+
+/* ================================================
+   ██████████████████████████████████████████████
+   SUB-COMPONENT 1: InputLabel
+   Props: text, optional(bool), tooltip(bool)
+   ██████████████████████████████████████████████
+================================================ */
+.c-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+/* prop: optional = true */
+.c-label__optional {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+/* prop: tooltip = true */
+.c-label__tooltip {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  color: var(--bg-base);
+  font-size: 9px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+}
+/* state: disabled */
+.c-label--disabled { opacity: 0.35; }
+
+
+/* ================================================
+   ██████████████████████████████████████████████
+   SUB-COMPONENT 2: InputAffix (Prefix / Suffix)
+   Props: type(text|icon|flag), content, position
+   ██████████████████████████████████████████████
+================================================ */
+.c-affix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 var(--space-md);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: border-color .18s, background .18s;
+  /* border được set bởi parent container */
+}
+/* prop: position = prefix */
+.c-affix--prefix {
+  border-right: 1.5px solid var(--input-border);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+/* prop: position = suffix */
+.c-affix--suffix {
+  border-left: 1.5px solid var(--input-border);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+/* prop: type = icon → svg inside */
+.c-affix svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* prop: type = flag → flag + dialcode + chevron */
+.c-affix__flag   { font-size: 18px; line-height: 1; }
+.c-affix__code   { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+.c-affix__chevron{ color: var(--text-tertiary); display: flex; align-items: center; }
+.c-affix__chevron svg { width: 11px; height: 11px; }
+
+/* Affix hover (khi parent không disabled) */
+.c-affix--clickable { cursor: pointer; }
+.c-affix--clickable:hover { background: var(--bg-raised); }
+
+
+/* ================================================
+   ██████████████████████████████████████████████
+   SUB-COMPONENT 3: InputTrailingIcon
+   Props: type(error|success|warning|eye|clear|calendar)
+   ██████████████████████████████████████████████
+================================================ */
+.c-trailing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-md);
+  flex-shrink: 0;
+  height: 44px;
+}
+.c-trailing svg { width: 18px; height: 18px; }
+/* prop: type = error */
+.c-trailing--error   { color: var(--red-400); }
+/* prop: type = success */
+.c-trailing--success { color: var(--mint-500); }
+/* prop: type = warning */
+.c-trailing--warning { color: var(--warning); }
+/* prop: type = muted (eye, calendar, clear) */
+.c-trailing--muted   { color: var(--text-tertiary); }
+/* prop: type = eye → button */
+.c-trailing--btn {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: color .15s;
+}
+.c-trailing--btn:hover { color: var(--text-secondary); }
+
+
+/* ================================================
+   ██████████████████████████████████████████████
+   SUB-COMPONENT 4: HelperText
+   Props: text, state(default|error|success|warning)
+   show-icon(bool)
+   ██████████████████████████████████████████████
+================================================ */
+.c-helper {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 16px;
+  margin-top: 6px;
+  padding-left: 2px;
+}
+.c-helper svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1.5px; }
+/* prop: state = default */
+.c-helper--default { color: var(--text-secondary); }
+/* prop: state = error */
+.c-helper--error   { color: var(--red-400); }
+/* prop: state = success */
+.c-helper--success { color: var(--mint-500); }
+/* prop: state = warning */
+.c-helper--warning { color: var(--warning); }
+
+
+/* ================================================
+   ██████████████████████████████████████████████
+   SUB-COMPONENT 5: CharCount
+   Props: current, max
+   ██████████████████████████████████████████████
+================================================ */
+.c-charcount {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-left: auto;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+.c-charcount--warn { color: var(--warning); }
+.c-charcount--over { color: var(--red-400); }
+
+/* helper + charcount row */
+.c-helper-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+.c-helper-row .c-helper { margin-top: 0; }
+
+
+/* ================================================
+   ██████████████████████████████████████████████
+   MAIN COMPONENT: InputContainer
+   "Variant" = data-state attribute
+   Tương đương Figma Variant Property
+   ██████████████████████████████████████████████
+================================================ */
+.c-input {
+  display: flex;
+  align-items: center;
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+  position: relative;
+}
+
+/* ---- Variant: hover ---- */
+.c-input[data-state="hover"],
+.c-input:hover:not([data-state="disabled"]):not([data-state="readonly"]):not([data-state="error"]):not([data-state="error-blank"]) {
+  border-color: var(--input-border-hover);
+  background: var(--input-bg-hover);
+}
+
+/* ---- Variant: focus ---- */
+.c-input[data-state="focus"],
+.c-input:focus-within:not([data-state="disabled"]):not([data-state="readonly"]):not([data-state="error"]):not([data-state="error-blank"]) {
+  border-color: var(--input-border-focus);
+  box-shadow: 0 0 0 3px rgba(0,217,163,.15);
+}
+.c-input[data-state="focus"] .c-affix,
+.c-input:focus-within .c-affix {
+  border-color: var(--input-border-focus);
+}
+
+/* ---- Variant: filled ---- */
+.c-input[data-state="filled"] {
+  border-color: var(--input-border-hover);
+}
+
+/* ---- Variant: success ---- */
+.c-input[data-state="success"] {
+  border-color: var(--input-border-success);
+  box-shadow: 0 0 0 3px rgba(0,217,163,.1);
+}
+
+/* ---- Variant: error (filled) ---- */
+.c-input[data-state="error"] {
+  border-color: var(--input-border-error);
+  background: rgba(220,38,38,.04);
+}
+.c-input[data-state="error"] .c-affix {
+  border-color: var(--input-border-error);
+}
+.c-input[data-state="error"]:focus-within {
+  box-shadow: 0 0 0 3px rgba(220,38,38,.15);
+}
+
+/* ---- Variant: error-blank ---- */
+.c-input[data-state="error-blank"] {
+  border-color: var(--input-border-error);
+  background: rgba(220,38,38,.02);
+}
+.c-input[data-state="error-blank"]:focus-within {
+  box-shadow: 0 0 0 3px rgba(220,38,38,.15);
+}
+
+/* ---- Variant: disabled ---- */
+.c-input[data-state="disabled"] {
+  border-color: var(--bg-raised);
+  background: var(--input-bg-disabled);
+  opacity: .45;
+  pointer-events: none;
+}
+
+/* ---- Variant: readonly ---- */
+.c-input[data-state="readonly"] {
+  border-color: var(--input-border-readonly);
+  background: var(--input-bg-readonly);
+}
+.c-input[data-state="readonly"] .c-field {
+  cursor: default;
+  color: var(--text-secondary);
+}
+
+/* ---- Variant: warning ---- */
+.c-input[data-state="warning"] {
+  border-color: var(--warning);
+  background: rgba(245,181,68,.03);
+}
+
+/* ================================================
+   FIELD (actual input/select/textarea inside container)
+   "Boolean prop: is-textarea" → .c-input--textarea
+================================================ */
+.c-field {
+  flex: 1;
+  height: 44px;
+  padding: 0 14px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 22px;
+  min-width: 0;
+  width: 100%;
+}
+.c-field::placeholder { color: var(--text-tertiary); }
+.c-field:disabled { cursor: not-allowed; color: var(--text-disabled); }
+
+/* Boolean prop: is-select */
+.c-field--select {
+  appearance: none;
+  cursor: pointer;
+}
+.c-field--select option {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* Boolean prop: is-date */
+.c-field--date { color-scheme: dark; }
+.c-field--date::-webkit-calendar-picker-indicator {
+  filter: invert(.5);
+  cursor: pointer;
+}
+
+/* Boolean prop: is-textarea */
+.c-input--textarea { align-items: flex-start; }
+.c-field--textarea {
+  height: auto;
+  min-height: 96px;
+  padding: 12px 14px;
+  resize: vertical;
+  line-height: 22px;
+}
+
+/* No-padding khi có prefix (prefix tự có padding) */
+.c-input .c-affix--prefix + .c-field { padding-left: 0; }
+
+/* ================================================
+   WRAPPER (field-wrapper — bọc toàn bộ 1 input group)
+================================================ */
+.c-field-wrapper { display: flex; flex-direction: column; }
+
+</style>
+</head>
+<body>
+
+<!-- PAGE HEADER -->
+<p class="page-tag">UI Advanced · UI Elements</p>
+<h1 class="page-title">Input Components</h1>
+<p class="page-subtitle">Hoàn thiện input components — Sub-components + Variant optimization</p>
+
+
+<!-- ================================================
+     SECTION 1 — TEXT FIELD · ALL STATES
+================================================ -->
+<section class="section">
+  <p class="section-label">01 — Text Field</p>
+  <h2 class="section-title">All States</h2>
+
+  <div class="grid">
+
+    <!-- DEFAULT -->
+    <div class="demo-card">
+      <span class="state-badge badge-default">Default</span>
+      <div class="c-field-wrapper">
+        <!-- Sub: Label | props: text="Label" -->
+        <div class="c-label">Label</div>
+        <!-- Main: InputContainer | data-state="default" -->
+        <div class="c-input" data-state="default">
+          <input class="c-field" type="text" placeholder="Placeholder"/>
+        </div>
+        <!-- Sub: HelperText | props: state=default, show-icon=true -->
+        <div class="c-helper c-helper--default">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7v4M8 5h.01" stroke-linecap="round"/></svg>
+          Message text
+        </div>
+      </div>
+    </div>
+
+    <!-- HOVER -->
+    <div class="demo-card">
+      <span class="state-badge badge-hover">Hover</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Label</div>
+        <div class="c-input" data-state="hover">
+          <input class="c-field" type="text" placeholder="Hover state"/>
+        </div>
+        <div class="c-helper c-helper--default">Message text</div>
+      </div>
+    </div>
+
+    <!-- FOCUS / TYPING -->
+    <div class="demo-card">
+      <span class="state-badge badge-focus">Focus · Typing</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Label</div>
+        <div class="c-input" data-state="focus">
+          <input class="c-field" type="text" value="Typing"/>
+        </div>
+        <div class="c-helper c-helper--default">Message text</div>
+      </div>
+    </div>
+
+    <!-- FILLED -->
+    <div class="demo-card">
+      <span class="state-badge badge-filled">Filled</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Label</div>
+        <div class="c-input" data-state="filled">
+          <input class="c-field" type="text" value="Filled/Inputted"/>
+        </div>
+        <div class="c-helper c-helper--default">Message text</div>
+      </div>
+    </div>
+
+    <!-- READONLY -->
+    <div class="demo-card">
+      <span class="state-badge badge-readonly">Read-only</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Label</div>
+        <div class="c-input" data-state="readonly">
+          <input class="c-field" type="text" value="Readonly" readonly/>
+        </div>
+        <div class="c-helper c-helper--default">Không edit, vẫn submit được</div>
+      </div>
+    </div>
+
+    <!-- DISABLED -->
+    <div class="demo-card">
+      <span class="state-badge badge-disabled">Disabled</span>
+      <div class="c-field-wrapper">
+        <div class="c-label c-label--disabled">Label</div>
+        <div class="c-input" data-state="disabled">
+          <input class="c-field" type="text" placeholder="Disabled" disabled/>
+        </div>
+        <div class="c-helper c-helper--default" style="opacity:.35">Message text</div>
+      </div>
+    </div>
+
+    <!-- ERROR — FILLED -->
+    <div class="demo-card">
+      <span class="state-badge badge-error">Error · Filled</span>
+      <div class="c-field-wrapper">
+        <!-- Sub: Label | props: text="Label", tooltip=true -->
+        <div class="c-label">
+          Label
+          <span class="c-label__tooltip" title="ACCT tooltip">?</span>
+        </div>
+        <div class="c-input" data-state="error">
+          <input class="c-field" type="text" value="Filled Error"/>
+          <!-- Sub: TrailingIcon | props: type=error -->
+          <div class="c-trailing c-trailing--error">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          </div>
+        </div>
+        <!-- Sub: HelperText | props: state=error, show-icon=true -->
+        <div class="c-helper c-helper--error">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          Tên đăng nhập không đúng
+        </div>
+      </div>
+    </div>
+
+    <!-- ERROR — BLANK -->
+    <div class="demo-card">
+      <span class="state-badge badge-error">Error · Blank</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Label</div>
+        <div class="c-input" data-state="error-blank">
+          <input class="c-field" type="text" placeholder="Blank Error"/>
+          <div class="c-trailing c-trailing--error">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          </div>
+        </div>
+        <div class="c-helper c-helper--error">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          Trường này không được để trống
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="demo-card">
+      <span class="state-badge badge-success">Success</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Label</div>
+        <div class="c-input" data-state="success">
+          <input class="c-field" type="text" value="valid@email.com"/>
+          <!-- Sub: TrailingIcon | props: type=success -->
+          <div class="c-trailing c-trailing--success">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8.5l4 4 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="c-helper c-helper--success">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 8.5l4 4 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Email hợp lệ
+        </div>
+      </div>
+    </div>
+
+    <!-- WARNING -->
+    <div class="demo-card">
+      <span class="state-badge badge-warning">Warning</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Label</div>
+        <div class="c-input" data-state="warning">
+          <input class="c-field" type="text" value="weak_password"/>
+          <!-- Sub: TrailingIcon | props: type=warning -->
+          <div class="c-trailing c-trailing--warning">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.22 1.754a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368L8.22 1.754ZM8 5a.75.75 0 0 1 .75.75v2.5a.75.75 0 0 1-1.5 0v-2.5A.75.75 0 0 1 8 5Zm0 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          </div>
+        </div>
+        <div class="c-helper c-helper--warning">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.22 1.754a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368L8.22 1.754ZM8 5a.75.75 0 0 1 .75.75v2.5a.75.75 0 0 1-1.5 0v-2.5A.75.75 0 0 1 8 5Zm0 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          Mật khẩu yếu, nên thêm ký tự đặc biệt
+        </div>
+      </div>
+    </div>
+
+    <!-- OPTIONAL + CHAR COUNT -->
+    <div class="demo-card">
+      <span class="state-badge badge-focus">Focus + Optional + CharCount</span>
+      <div class="c-field-wrapper">
+        <!-- Sub: Label | props: optional=true -->
+        <div class="c-label">
+          Label
+          <span class="c-label__optional">(Optional)</span>
+        </div>
+        <div class="c-input" data-state="default" id="cc-container">
+          <input
+            class="c-field"
+            type="text"
+            placeholder="Placeholder"
+            maxlength="100"
+            id="cc-input"
+            oninput="updateCharCount(this, 'cc-count', 100)"
+          />
+        </div>
+        <!-- Sub: HelperText + CharCount row -->
+        <div class="c-helper-row">
+          <div class="c-helper c-helper--default">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7v4M8 5h.01" stroke-linecap="round"/></svg>
+            Helper text
+          </div>
+          <!-- Sub: CharCount | props: max=100 -->
+          <span class="c-charcount" id="cc-count">0/100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LABEL + TOOLTIP (ACCT style) -->
+    <div class="demo-card">
+      <span class="state-badge badge-default">Label + Tooltip</span>
+      <div class="c-field-wrapper">
+        <!-- Sub: Label | props: text="ACCT", tooltip=true -->
+        <div class="c-label">
+          ACCT
+          <span class="c-label__tooltip" title="Account number tooltip">i</span>
+        </div>
+        <div class="c-input" data-state="default">
+          <input class="c-field" type="text" placeholder="Placeholder"/>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ================================================
+     SECTION 2 — PREFIX / SUFFIX (Leading/Trailing)
+     Tái sử dụng Sub-component: InputAffix
+================================================ -->
+<section class="section">
+  <p class="section-label">02 — Leading / Trailing</p>
+  <h2 class="section-title">Prefix · Suffix (InputAffix Sub-component)</h2>
+
+  <div class="grid">
+
+    <!-- Affix: type=text, position=prefix -->
+    <div class="demo-card">
+      <span class="state-badge badge-default">Prefix · Text</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Website</div>
+        <div class="c-input" data-state="default">
+          <!-- Sub: InputAffix | type=text, position=prefix -->
+          <div class="c-affix c-affix--prefix">https://</div>
+          <input class="c-field" type="text" placeholder="example.com"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Affix: type=icon, position=prefix -->
+    <div class="demo-card">
+      <span class="state-badge badge-default">Prefix · Icon</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Search</div>
+        <div class="c-input" data-state="default">
+          <!-- Sub: InputAffix | type=icon, position=prefix -->
+          <div class="c-affix c-affix--prefix">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3" stroke-linecap="round"/></svg>
+          </div>
+          <input class="c-field" type="text" placeholder="Tìm kiếm..."/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Affix: type=text, position=suffix -->
+    <div class="demo-card">
+      <span class="state-badge badge-default">Suffix · Text</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Giá trị</div>
+        <div class="c-input" data-state="default">
+          <input class="c-field" type="number" placeholder="0"/>
+          <!-- Sub: InputAffix | type=text, position=suffix -->
+          <div class="c-affix c-affix--suffix">VND</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Affix: type=text, both prefix + suffix -->
+    <div class="demo-card">
+      <span class="state-badge badge-filled">Prefix + Suffix · Filled</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Khoảng giá</div>
+        <div class="c-input" data-state="filled">
+          <div class="c-affix c-affix--prefix">từ</div>
+          <input class="c-field" type="number" value="100000"/>
+          <div class="c-affix c-affix--suffix">VND</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Affix: type=text, error state -->
+    <div class="demo-card">
+      <span class="state-badge badge-error">Prefix · Error</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Website</div>
+        <div class="c-input" data-state="error">
+          <div class="c-affix c-affix--prefix" style="border-color: var(--input-border-error)">https://</div>
+          <input class="c-field" type="text" value="invalid url!!"/>
+          <div class="c-trailing c-trailing--error">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          </div>
+        </div>
+        <div class="c-helper c-helper--error">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          URL không hợp lệ
+        </div>
+      </div>
+    </div>
+
+    <!-- Affix: disabled -->
+    <div class="demo-card">
+      <span class="state-badge badge-disabled">Prefix · Disabled</span>
+      <div class="c-field-wrapper">
+        <div class="c-label c-label--disabled">Website</div>
+        <div class="c-input" data-state="disabled">
+          <div class="c-affix c-affix--prefix">https://</div>
+          <input class="c-field" type="text" placeholder="Disabled" disabled/>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ================================================
+     SECTION 3 — PHONE NUMBER
+     Affix: type=flag (Sub-component đặc biệt)
+================================================ -->
+<section class="section">
+  <p class="section-label">03 — Phone Number</p>
+  <h2 class="section-title">Phone · Flag Affix Sub-component</h2>
+
+  <div class="grid">
+
+    <!-- Phone Default -->
+    <div class="demo-card">
+      <span class="state-badge badge-default">Default</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Số điện thoại</div>
+        <div class="c-input" data-state="default">
+          <!-- Sub: InputAffix | type=flag -->
+          <div class="c-affix c-affix--prefix c-affix--clickable">
+            <span class="c-affix__flag">🇻🇳</span>
+            <span class="c-affix__code">+84</span>
+            <span class="c-affix__chevron">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <input class="c-field" type="tel" placeholder="090 000 0000"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone Focus -->
+    <div class="demo-card">
+      <span class="state-badge badge-focus">Focus</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Số điện thoại</div>
+        <div class="c-input" data-state="focus">
+          <div class="c-affix c-affix--prefix c-affix--clickable" style="border-color: var(--input-border-focus)">
+            <span class="c-affix__flag">🇻🇳</span>
+            <span class="c-affix__code">+84</span>
+            <span class="c-affix__chevron">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <input class="c-field" type="tel" value="090 123 4567"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone Filled -->
+    <div class="demo-card">
+      <span class="state-badge badge-filled">Filled</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Số điện thoại</div>
+        <div class="c-input" data-state="filled">
+          <div class="c-affix c-affix--prefix c-affix--clickable">
+            <span class="c-affix__flag">🇺🇸</span>
+            <span class="c-affix__code">+1</span>
+            <span class="c-affix__chevron">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <input class="c-field" type="tel" value="415 000 0000"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone Error -->
+    <div class="demo-card">
+      <span class="state-badge badge-error">Error</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Số điện thoại</div>
+        <div class="c-input" data-state="error">
+          <div class="c-affix c-affix--prefix c-affix--clickable" style="border-color: var(--input-border-error)">
+            <span class="c-affix__flag">🇻🇳</span>
+            <span class="c-affix__code">+84</span>
+            <span class="c-affix__chevron">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <input class="c-field" type="tel" value="090 abc xyz"/>
+          <div class="c-trailing c-trailing--error">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          </div>
+        </div>
+        <div class="c-helper c-helper--error">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          Số điện thoại không hợp lệ
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone Disabled -->
+    <div class="demo-card">
+      <span class="state-badge badge-disabled">Disabled</span>
+      <div class="c-field-wrapper">
+        <div class="c-label c-label--disabled">Số điện thoại</div>
+        <div class="c-input" data-state="disabled">
+          <div class="c-affix c-affix--prefix">
+            <span class="c-affix__flag">🇻🇳</span>
+            <span class="c-affix__code">+84</span>
+          </div>
+          <input class="c-field" type="tel" placeholder="Disabled" disabled/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone Readonly -->
+    <div class="demo-card">
+      <span class="state-badge badge-readonly">Read-only</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Số điện thoại</div>
+        <div class="c-input" data-state="readonly">
+          <div class="c-affix c-affix--prefix">
+            <span class="c-affix__flag">🇻🇳</span>
+            <span class="c-affix__code">+84</span>
+          </div>
+          <input class="c-field" type="tel" value="090 123 4567" readonly/>
+        </div>
+        <div class="c-helper c-helper--default">Vẫn submit được</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ================================================
+     SECTION 4 — PASSWORD
+     TrailingIcon: type=eye (toggle button)
+================================================ -->
+<section class="section">
+  <p class="section-label">04 — Password</p>
+  <h2 class="section-title">Password · Eye Toggle Sub-component</h2>
+
+  <div class="grid">
+
+    <!-- Password Default -->
+    <div class="demo-card">
+      <span class="state-badge badge-default">Default</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Mật khẩu</div>
+        <div class="c-input" data-state="default">
+          <input class="c-field" type="password" placeholder="Nhập mật khẩu" id="p1"/>
+          <!-- Sub: TrailingIcon | type=eye, is-button=true -->
+          <button class="c-trailing c-trailing--muted c-trailing--btn" onclick="toggleEye('p1',this)" type="button" aria-label="Hiện mật khẩu">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"/><circle cx="8" cy="8" r="2"/></svg>
+          </button>
+        </div>
+        <div class="c-helper c-helper--default">Tối thiểu 8 ký tự</div>
+      </div>
+    </div>
+
+    <!-- Password Filled + Visible -->
+    <div class="demo-card">
+      <span class="state-badge badge-filled">Filled · Visible</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Mật khẩu</div>
+        <div class="c-input" data-state="filled">
+          <input class="c-field" type="text" value="MyP@ssw0rd!" id="p2"/>
+          <button class="c-trailing c-trailing--muted c-trailing--btn" onclick="toggleEye('p2',this)" type="button" aria-label="Ẩn mật khẩu">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2l12 12M6.5 6.6A2 2 0 0 0 9.4 9.5M4.2 4.3C2.4 5.4 1 8 1 8s2.5 5 7 5c1.4 0 2.7-.4 3.8-1M6 3.1C6.6 3 7.3 3 8 3c4.5 0 7 5 7 5s-.7 1.4-1.8 2.6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password Error -->
+    <div class="demo-card">
+      <span class="state-badge badge-error">Error</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Mật khẩu</div>
+        <div class="c-input" data-state="error">
+          <input class="c-field" type="password" value="abc" id="p3"/>
+          <button class="c-trailing c-trailing--btn c-trailing--error" onclick="toggleEye('p3',this)" type="button">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"/><circle cx="8" cy="8" r="2"/></svg>
+          </button>
+        </div>
+        <div class="c-helper c-helper--error">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          Mật khẩu phải có ít nhất 8 ký tự
+        </div>
+      </div>
+    </div>
+
+    <!-- Password Disabled -->
+    <div class="demo-card">
+      <span class="state-badge badge-disabled">Disabled</span>
+      <div class="c-field-wrapper">
+        <div class="c-label c-label--disabled">Mật khẩu</div>
+        <div class="c-input" data-state="disabled">
+          <input class="c-field" type="password" placeholder="Disabled" disabled/>
+          <button class="c-trailing c-trailing--muted c-trailing--btn" disabled type="button" style="pointer-events:none">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"/><circle cx="8" cy="8" r="2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ================================================
+     SECTION 5 — SELECT
+================================================ -->
+<section class="section">
+  <p class="section-label">05 — Select</p>
+  <h2 class="section-title">Select · Chevron Suffix Sub-component</h2>
+
+  <div class="grid">
+
+    <div class="demo-card">
+      <span class="state-badge badge-default">Default</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Quốc gia</div>
+        <div class="c-input" data-state="default">
+          <select class="c-field c-field--select">
+            <option value="" disabled selected>Placeholder</option>
+            <option>🇻🇳 Việt Nam</option>
+            <option>🇺🇸 United States</option>
+            <option>🇯🇵 Japan</option>
+          </select>
+          <!-- Sub: TrailingIcon | type=chevron -->
+          <div class="c-trailing c-trailing--muted" style="pointer-events:none">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M3 6l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <span class="state-badge badge-filled">Filled</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Quốc gia</div>
+        <div class="c-input" data-state="filled">
+          <select class="c-field c-field--select">
+            <option>🇻🇳 Việt Nam</option>
+            <option>🇺🇸 United States</option>
+          </select>
+          <div class="c-trailing c-trailing--muted" style="pointer-events:none">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M3 6l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <span class="state-badge badge-error">Error</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Quốc gia</div>
+        <div class="c-input" data-state="error-blank">
+          <select class="c-field c-field--select">
+            <option value="" disabled selected>Placeholder</option>
+            <option>🇻🇳 Việt Nam</option>
+          </select>
+          <div class="c-trailing c-trailing--error" style="pointer-events:none">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M3 6l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="c-helper c-helper--error">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+          Vui lòng chọn quốc gia
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <span class="state-badge badge-disabled">Disabled</span>
+      <div class="c-field-wrapper">
+        <div class="c-label c-label--disabled">Quốc gia</div>
+        <div class="c-input" data-state="disabled">
+          <select class="c-field c-field--select" disabled>
+            <option>Disabled</option>
+          </select>
+          <div class="c-trailing c-trailing--muted" style="pointer-events:none">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M3 6l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ================================================
+     SECTION 6 — DATE PICKER
+================================================ -->
+<section class="section">
+  <p class="section-label">06 — Date Picker</p>
+  <h2 class="section-title">Date Picker · Calendar Trailing Icon</h2>
+
+  <div class="grid">
+
+    <div class="demo-card">
+      <span class="state-badge badge-default">Default</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Ngày sinh</div>
+        <div class="c-input" data-state="default">
+          <input class="c-field c-field--date" type="date"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <span class="state-badge badge-filled">Filled</span>
+      <div class="c-field-wrapper">
+        <div class="c-label">Ngày sinh</div>
+        <div class="c-input" data-state="filled">
+          <input class="c-field c-field--date" type="date" value="2000-01-15"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      
