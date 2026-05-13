@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Input Components — UIUX Designer Mastery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+  <style>
+    /* ============================================
+       01 — COLOR TOKENS
+    ============================================ */
+    :root {
+      /* Backgrounds */
+      --bg-void:     #050506;
+      --bg-base:     #0A0A0C;
+      --bg-elevated: #111114;
+      --bg-raised:   #1A1A1F;
+
+      /* Red — Action & Alarm */
+      --red-900: #4A0E14;
+      --red-700: #8B0E1F;
+      --red-500: #DC2626;
+      --red-400: #EF4444;
+
+      /* Mint — Data & Confirmation */
+      --mint-900: #003D2E;
+      --mint-500: #00D9A3;
+      --mint-300: #4DFFCC;
+
+      /* Warning */
+      --warning: #F5B544;
+
+      /* Text */
+      --text-primary:   #F4F4F5;
+      --text-secondary: #A1A1AA;
+      --text-tertiary:  #52525B;
+      --text-disabled:  #27272A;
+
+      /* Input-specific semantic tokens */
+      --input-bg:            #1A1A1F;
+      --input-bg-hover:      #1F1F26;
+      --input-border:        #3F3F46;
+      --input-border-hover:  #71717A;
+      --input-border-focus:  #00D9A3;
+      --input-border-error:  #DC2626;
+      --input-border-readonly: #2D2D35;
+      --input-bg-disabled:   #0F0F12;
+      --input-bg-readonly:   #13131A;
+
+      /* Typography */
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body:    'Inter', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    /* ============================================
+       02 — RESET & BASE
+    ============================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 22px;
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+
+    /* ============================================
+       LAYOUT
+    ============================================ */
+    .page-header {
+      margin-bottom: 56px;
+    }
+
+    .page-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 14px;
+      font-weight: 500;
+      color: var(--red-500);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 40px;
+      line-height: 44px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    .section {
+      margin-bottom: 64px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      line-height: 32px;
+      font-weight: 600;
+      color: var(--mint-500);
+      margin-bottom: 32px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--bg-raised);
+    }
+
+    .section-subtitle {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      margin-top: 36px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    /* ============================================
+       INPUT FIELD — BASE STRUCTURE
+    ============================================ */
+    .field-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Label */
+    .field-label {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 18px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .field-label .label-optional {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-weight: 400;
+    }
+
+    .field-label .label-icon {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--text-tertiary);
+      color: var(--bg-base);
+      font-size: 9px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: help;
+      flex-shrink: 0;
+    }
+
+    /* Input container (holds prefix/suffix + actual input) */
+    .input-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: 8px;
+      transition:
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+      overflow: hidden;
+    }
+
+    /* Prefix / Suffix */
+    .input-prefix,
+    .input-suffix {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      height: 44px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      background: var(--bg-elevated);
+      border-right: 1.5px solid var(--input-border);
+      flex-shrink: 0;
+      gap: 4px;
+      white-space: nowrap;
+      transition: border-color 0.18s ease;
+    }
+
+    .input-suffix {
+      border-right: none;
+      border-left: 1.5px solid var(--input-border);
+    }
+
+    .input-prefix svg,
+    .input-suffix svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* The actual <input> element */
+    .input-field {
+      flex: 1;
+      height: 44px;
+      padding: 0 14px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 22px;
+      min-width: 0;
+    }
+
+    .input-field::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    /* Trailing icon inside input */
+    .input-trailing-icon {
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+
+    .input-trailing-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Helper text */
+    .field-helper {
+      display: flex;
+      align-items: flex-start;
+      gap: 5px;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--text-secondary);
+      padding-left: 2px;
+    }
+
+    .field-helper svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+      margin-top: 1.5px;
+    }
+
+    /* Character count */
+    .field-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .char-count {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-left: auto;
+    }
+
+    /* ============================================
+       INPUT STATES
+    ============================================ */
+
+    /* --- HOVER --- */
+    .input-container:hover:not(.is-disabled):not(.is-readonly):not(.is-error) {
+      border-color: var(--input-border-hover);
+      background: var(--input-bg-hover);
+    }
+
+    /* --- FOCUS --- */
+    .input-container:focus-within:not(.is-disabled):not(.is-readonly):not(.is-error) {
+      border-color: var(--input-border-focus);
+      box-shadow: 0 0 0 3px rgba(0, 217, 163, 0.15);
+    }
+
+    .input-container:focus-within .input-prefix,
+    .input-container:focus-within .input-suffix {
+      border-color: var(--input-border-focus);
+    }
+
+    /* --- FILLED (has value) --- */
+    .input-container.is-filled:not(.is-error) {
+      border-color: var(--input-border-hover);
+    }
+
+    /* --- ERROR --- */
+    .input-container.is-error {
+      border-color: var(--input-border-error);
+      background: rgba(220, 38, 38, 0.04);
+    }
+
+    .input-container.is-error:focus-within {
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+    }
+
+    .input-container.is-error .input-prefix,
+    .input-container.is-error .input-suffix {
+      border-color: var(--input-border-error);
+    }
+
+    .field-helper.is-error {
+      color: var(--red-400);
+    }
+
+    .field-helper.is-success {
+      color: var(--mint-500);
+    }
+
+    .field-helper.is-warning {
+      color: var(--warning);
+    }
+
+    /* --- DISABLED --- */
+    .input-container.is-disabled {
+      border-color: var(--bg-raised);
+      background: var(--input-bg-disabled);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .input-container.is-disabled .input-field {
+      cursor: not-allowed;
+      color: var(--text-disabled);
+    }
+
+    .input-container.is-disabled .input-field::placeholder {
+      color: var(--text-disabled);
+    }
+
+    /* --- READ-ONLY --- */
+    .input-container.is-readonly {
+      border-color: var(--input-border-readonly);
+      background: var(--input-bg-readonly);
+    }
+
+    .input-container.is-readonly .input-field {
+      cursor: default;
+      color: var(--text-secondary);
+    }
+
+    /* ============================================
+       STATE BADGE (for demo labels)
+    ============================================ */
+    .state-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .badge-default  { background: var(--bg-raised);  color: var(--text-tertiary); }
+    .badge-hover    { background: rgba(113,113,122,0.15); color: var(--text-secondary); }
+    .badge-focus    { background: rgba(0,217,163,0.12);   color: var(--mint-500); }
+    .badge-filled   { background: rgba(244,244,245,0.08); color: var(--text-primary); }
+    .badge-error    { background: rgba(220,38,38,0.12);   color: var(--red-400); }
+    .badge-disabled { background: rgba(39,39,42,0.6);     color: var(--text-disabled); }
+    .badge-readonly { background: rgba(45,45,53,0.6);     color: var(--text-tertiary); }
+
+    /* ============================================
+       SELECT COMPONENT
+    ============================================ */
+    .select-field {
+      flex: 1;
+      height: 44px;
+      padding: 0 14px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 15px;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .select-field option {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .select-chevron {
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      color: var(--text-tertiary);
+      pointer-events: none;
+      flex-shrink: 0;
+    }
+
+    /* ============================================
+       DATE PICKER
+    ============================================ */
+    .date-field {
+      flex: 1;
+      height: 44px;
+      padding: 0 14px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 15px;
+    }
+
+    .date-field::-webkit-calendar-picker-indicator {
+      filter: invert(0.5);
+      cursor: pointer;
+      margin-right: 4px;
+    }
+
+    /* ============================================
+       TEXTAREA
+    ============================================ */
+    .input-container.is-textarea {
+      align-items: flex-start;
+    }
+
+    .textarea-field {
+      flex: 1;
+      padding: 12px 14px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 22px;
+      resize: vertical;
+      min-height: 96px;
+    }
+
+    .textarea-field::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    /* ============================================
+       PASSWORD TOGGLE
+    ============================================ */
+    .toggle-password {
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      background: none;
+      border: none;
+      outline: none;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .toggle-password:hover {
+      color: var(--text-secondary);
+    }
+
+    .toggle-password svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ============================================
+       PHONE NUMBER — FLAG + DIAL CODE
+    ============================================ */
+    .phone-prefix {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 12px;
+      height: 44px;
+      background: var(--bg-elevated);
+      border-right: 1.5px solid var(--input-border);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .phone-prefix:hover {
+      background: var(--bg-raised);
+    }
+
+    .flag-emoji {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .dial-code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .phone-chevron {
+      color: var(--text-tertiary);
+    }
+
+    .phone-chevron svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* ============================================
+       DEMO CARD
+    ============================================ */
+    .demo-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--bg-raised);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    /* ============================================
+       DIVIDER
+    ============================================ */
+    .divider {
+      height: 1px;
+      background: var(--bg-raised);
+      margin: 48px 0;
+    }
+
+    /* ============================================
+       THEORY SECTION
+    ============================================ */
+    .theory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .theory-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--bg-raised);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .theory-card-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--mint-500);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .theory-card p,
+    .theory-card li {
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--text-secondary);
+    }
+
+    .theory-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .theory-card li::before {
+      content: "→ ";
+      color: var(--mint-500);
+      font-weight: 600;
+    }
+
+    .theory-card .highlight {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .theory-card .code-inline {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--bg-raised);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--mint-300);
+    }
+
+    /* ============================================
+       COMPARISON TABLE
+    ============================================ */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 16px;
+    }
+
+    .compare-table th {
+      text-align: left;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      border-bottom: 1px solid var(--bg-raised);
+    }
+
+    .compare-table td {
+      padding: 12px 14px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .compare-table td:first-child {
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .tag-yes {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(0,217,163,0.12);
+      color: var(--mint-500);
+    }
+
+    .tag-no {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(220,38,38,0.12);
+      color: var(--red-400);
+    }
+
+    /* ============================================
+       RESPONSIVE
+    ============================================ */
+    @media (max-width: 600px) {
+      .page-title { font-size: 28px; line-height: 34px; }
+      .section-title { font-size: 22px; }
+      .grid, .grid-2, .theory-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================
+       PAGE HEADER
+  =========================================== -->
+  <header class="page-header">
+    <p class="page-tag">UI Advanced · UI Elements</p>
+    <h1 class="page-title">Input Components</h1>
+    <p class="page-subtitle">Hoàn thiện input components đầy đủ các loại và trạng thái</p>
+  </header>
+
+
+  <!-- ==========================================
+       SECTION 1 — TEXT FIELD STATES
+  =========================================== -->
+  <section class="section">
+    <h2 class="section-title">01 — Text Field · All States</h2>
+
+    <div class="grid">
+
+      <!-- DEFAULT -->
+      <div class="demo-card">
+        <span class="state-badge badge-default">● Default</span>
+        <div class="field-wrapper">
+          <label class="field-label">Label</label>
+          <div class="input-container">
+            <input class="input-field" type="text" placeholder="Placeholder" />
+          </div>
+          <div class="field-helper">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="8" cy="8" r="6.5"/>
+              <path d="M8 7v4M8 5.5v.5"/>
+            </svg>
+            Helper text
+          </div>
+        </div>
+      </div>
+
+      <!-- HOVER (simulated via class) -->
+      <div class="demo-card">
+        <span class="state-badge badge-hover">◎ Hover</span>
+        <div class="field-wrapper">
+          <label class="field-label">Label</label>
+          <div class="input-container" style="border-color: var(--input-border-hover); background: var(--input-bg-hover);">
+            <input class="input-field" type="text" placeholder="Hover state" />
+          </div>
+          <div class="field-helper">Helper text</div>
+        </div>
+      </div>
+
+      <!-- FOCUS (simulated) -->
+      <div class="demo-card">
+        <span class="state-badge badge-focus">◉ Focus</span>
+        <div class="field-wrapper">
+          <label class="field-label">Label</label>
+          <div class="input-container" style="border-color: var(--input-border-focus); box-shadow: 0 0 0 3px rgba(0,217,163,0.15);">
+            <input class="input-field" type="text" placeholder="Typing|" />
+          </div>
+          <div class="field-helper">Helper text</div>
+        </div>
+      </div>
+
+      <!-- FILLED -->
+      <div class="demo-card">
+        <span class="state-badge badge-filled">✓ Filled</span>
+        <div class="field-wrapper">
+          <label class="field-label">Label</label>
+          <div class="input-container is-filled">
+            <input class="input-field" type="text" value="Filled/Inputted" />
+          </div>
+          <div class="field-helper">Helper text</div>
+        </div>
+      </div>
+
+      <!-- ERROR — FILLED -->
+      <div class="demo-card">
+        <span class="state-badge badge-error">✕ Error · Filled</span>
+        <div class="field-wrapper">
+          <label class="field-label">Label</label>
+          <div class="input-container is-filled is-error">
+            <input class="input-field" type="text" value="Filled Error" />
+            <div class="input-trailing-icon" style="color: var(--red-400);">
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="field-helper is-error">
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+            Tên đăng nhập không đúng
+          </div>
+        </div>
+      </div>
+
+      <!-- ERROR — BLANK -->
+      <div class="demo-card">
+        <span class="state-badge badge-error">✕ Error · Blank</span>
+        <div class="field-wrapper">
+          <label class="field-label">Label</label>
+          <div class="input-container is-error">
+            <input class="input-field" type="text" placeholder="Blank Error" />
+            <div class="input-trailing-icon" style="color: var(--red-400);">
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="field-helper is-error">
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+            Trường này không được để trống
+          </div>
+        </div>
+      </div>
+
+      <!-- DISABLED -->
+      <div class="demo-card">
+        <span class="state-badge badge-disabled">⊘ Disabled</span>
+        <div class="field-wrapper">
+          <label class="field-label" style="opacity:0.4;">Label</label>
+          <div class="input-container is-disabled">
+            <input class="input-field" type="text" placeholder="Disabled" disabled />
+          </div>
+          <div class="field-helper" style="opacity:0.4;">Helper text</div>
+        </div>
+      </div>
+
+      <!-- READ-ONLY -->
+      <div class="demo-card">
+        <span class="state-badge badge-readonly">◫ Read-only</span>
+        <div class="field-wrapper">
+          <label class="field-label">Label</label>
+          <div class="input-container is-readonly">
+            <input class="input-field" type="text" value="Readonly value" readonly />
+          </div>
+          <div class="field-helper">Không thể chỉnh sửa, vẫn submit được</div>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="demo-card">
+        <span class="state-badge" style="background:rgba(0,217,163,0.12);color:var(--mint-500);">✓ Success</span>
+        <div class="field-wrapper">
+          <label class="field-label">Label</label>
+          <div class="input-container is-filled" style="border-color: var(--mint-500);">
+            <input class="input-field" type="text" value="Valid input" />
+            <div class="input-trailing-icon" style="color: var(--mint-500);">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2.5 8.5l4 4 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          <div class="field-helper is-success">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2.5 8.5l4 4 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Email hợp lệ
+          </div>
+        </div>
+      </div>
+
+      <!-- WITH CHARACTER COUNT -->
+      <div class="demo-card">
+        <span class="state-badge badge-focus">◉ Focus + Char Count</span>
+        <div class="field-wrapper">
+          <label class="field-label">Label <span class="label-optional">(Optional)</span></label>
+          <div class="input-container" id="charContainer">
+            <input
+              class="input-field"
+              type="text"
+              placeholder="Placeholder"
+              maxlength="100"
+              id="charInput"
+              oninput="document.getElementById('charCount').textContent = this.value.length + '/100'"
+            />
+          </div>
+          <div class="field-footer">
+            <span class="field-helper">Helper text</span>
+            <span class="char-count" id="charCount">0/100</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+  </section>
+
+
+  <!-- ==========================================
+       SECTION 2 — PREFIX / SUFFIX
+  =========================================== -->
+  <section class="section">
+    <h2 class="section-title">02 — Leading / Trailing (Prefix · Suffix)</h2>
+
+    <div class="grid">
+
+      <!-- Text Prefix -->
+      <div class="demo-card">
+        <span class="state-badge badge-default">Text Prefix</span>
+        <div class="field-wrapper">
+          <label class="field-label">Website</label>
+          <div class="input-container">
+            <div class="input-prefix">https://</div>
+            <input class="input-field" type="text" placeholder="example.com" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Icon Prefix -->
+      <div class="demo-card">
+        <span class="state-badge badge-default">Icon Prefix</span>
+        <div class="field-wrapper">
+          <label class="field-label">Search</label>
+          <div class="input-container">
+            <div class="input-prefix">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="6.5" cy="6.5" r="4.5"/>
+                <path d="M10 10l3 3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <input class="input-field" type="text" placeholder="Tìm kiếm..." />
+          </div>
+        </div>
+      </div>
+
+      <!-- Text Suffix -->
+      <div class="demo-card">
+        <span class="state-badge badge-default">Text Suffix</span>
+        <div class="field-wrapper">
+          <label class="field-label">Giá trị</label>
+          <div class="input-container">
+            <input class="input-field" type="number" placeholder="0" />
+            <div class="input-suffix">VND</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone Number — Flag + Dial Code -->
+      <div class="demo-card">
+        <span class="state-badge badge-default">Phone Number</span>
+        <div class="field-wrapper">
+          <label class="field-label">Số điện thoại</label>
+          <div class="input-container">
+            <div class="phone-prefix">
+              <span class="flag-emoji">🇻🇳</span>
+              <span class="dial-code">+84</span>
+              <span class="phone-chevron">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M2 4l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </div>
+            <input class="input-field" type="tel" placeholder="090 000 0000" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone — Focus state -->
+      <div class="demo-card">
+        <span class="state-badge badge-focus">Phone · Focus</span>
+        <div class="field-wrapper">
+          <label class="field-label">Số điện thoại</label>
+          <div class="input-container" style="border-color: var(--input-border-focus); box-shadow: 0 0 0 3px rgba(0,217,163,0.15);">
+            <div class="phone-prefix" style="border-color: var(--input-border-focus);">
+              <span class="flag-emoji">🇻🇳</span>
+              <span class="dial-code">+84</span>
+              <span class="phone-chevron">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M2 4l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </div>
+            <input class="input-field" type="tel" value="090 123 4567" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone — Error state -->
+      <div class="demo-card">
+        <span class="state-badge badge-error">Phone · Error</span>
+        <div class="field-wrapper">
+          <label class="field-label">Số điện thoại</label>
+          <div class="input-container is-error">
+            <div class="phone-prefix" style="border-color: var(--red-500);">
+              <span class="flag-emoji">🇻🇳</span>
+              <span class="dial-code">+84</span>
+              <span class="phone-chevron">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M2 4l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </div>
+            <input class="input-field" type="tel" value="090 abc" />
+            <div class="input-trailing-icon" style="color: var(--red-400);">
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="field-helper is-error">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0;margin-top:1.5px">
+              <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+            Số điện thoại không hợp lệ
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==========================================
+       SECTION 3 — PASSWORD
+  =========================================== -->
+  <section class="section">
+    <h2 class="section-title">03 — Password Field</h2>
+
+    <div class="grid">
+
+      <!-- Password Default -->
+      <div class="demo-card">
+        <span class="state-badge badge-default">Default</span>
+        <div class="field-wrapper">
+          <label class="field-label">Mật khẩu</label>
+          <div class="input-container">
+            <input class="input-field" type="password" placeholder="Nhập mật khẩu" id="pwd1" />
+            <button class="toggle-password" onclick="togglePwd('pwd1', this)" type="button" aria-label="Hiện mật khẩu">
+              <!-- Eye icon -->
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"/>
+                <circle cx="8" cy="8" r="2"/>
+              </svg>
+            </button>
+          </div>
+          <div class="field-helper">Tối thiểu 8 ký tự</div>
+        </div>
+      </div>
+
+      <!-- Password Filled + Visible -->
+      <div class="demo-card">
+        <span class="state-badge badge-filled">Filled · Visible</span>
+        <div class="field-wrapper">
+          <label class="field-label">Mật khẩu</label>
+          <div class="input-container is-filled">
+            <input class="input-field" type="text" value="MyP@ssw0rd" id="pwd2" />
+            <button class="toggle-password" onclick="togglePwd('pwd2', this)" type="button" aria-label="Ẩn mật khẩu">
+              <!-- Eye-off icon -->
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 2l12 12M6.5 6.6A2 2 0 0 0 9.4 9.5M4.2 4.3C2.4 5.4 1 8 1 8s2.5 5 7 5c1.4 0 2.7-.4 3.8-1M6 3.1C6.6 3 7.3 3 8 3c4.5 0 7 5 7 5s-.7 1.4-1.8 2.6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Error -->
+      <div class="demo-card">
+        <span class="state-badge badge-error">Error</span>
+        <div class="field-wrapper">
+          <label class="field-label">Mật khẩu</label>
+          <div class="input-container is-filled is-error">
+            <input class="input-field" type="password" value="abc" id="pwd3" />
+            <button class="toggle-password" onclick="togglePwd('pwd3', this)" type="button">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"/>
+                <circle cx="8" cy="8" r="2"/>
+              </svg>
+            </button>
+          </div>
+          <div class="field-helper is-error">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0;margin-top:1.5px">
+              <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+            Mật khẩu phải có ít nhất 8 ký tự
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Disabled -->
+      <div class="demo-card">
+        <span class="state-badge badge-disabled">Disabled</span>
+        <div class="field-wrapper">
+          <label class="field-label" style="opacity:0.4;">Mật khẩu</label>
+          <div class="input-container is-disabled">
+            <input class="input-field" type="password" placeholder="Disabled" disabled />
+            <button class="toggle-password" disabled style="opacity:0.3; cursor:not-allowed;">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"/>
+                <circle cx="8" cy="8" r="2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==========================================
+       SECTION 4 — SELECT
+  =========================================== -->
+  <section class="section">
+    <h2 class="section-title">04 — Select</h2>
+
+    <div class="grid">
+
+      <!-- Select Default -->
+      <div class="demo-card">
+        <span class="state-badge badge-default">Default</span>
+        <div class="field-wrapper">
+          <label class="field-label">Quốc gia</label>
+          <div class="input-container">
+            <select class="select-field">
+              <option value="" disabled selected>Chọn quốc gia</option>
+              <option value="vn">🇻🇳 Việt Nam</option>
+              <option value="us">🇺🇸 United States</option>
+              <option value="jp">🇯🇵 Japan</option>
+              <option value="sg">🇸🇬 Singapore</option>
+            </select>
+            <div class="select-chevron">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
+                <path d="M3 6l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Select Filled -->
+      <div class="demo-card">
+        <span class="state-badge badge-filled">Filled</span>
+        <div class="field-wrapper">
+          <label class="field-label">Quốc gia</label>
+          <div class="input-container is-filled">
+            <select class="select-field">
+              <option value="vn" selected>🇻🇳 Việt Nam</option>
+              <option value="us">🇺🇸 United States</option>
+              <option value="jp">🇯🇵 Japan</option>
+            </select>
+            <div class="select-chevron">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
+                <path d="M3 6l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Select Error -->
+      <div class="demo-card">
+        <span class="state-badge badge-error">Error</span>
+        <div class="field-wrapper">
+          <label class="field-label">Quốc gia</label>
+          <div class="input-container is-error">
+            <select class="select-field">
+              <option value="" disabled selected>Chọn quốc gia</option>
+              <option value="vn">🇻🇳 Việt Nam</option>
+            </select>
+            <div class="select-chevron" style="color: var(--red-400);">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
+                <path d="M3 6l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          <div class="field-helper is-error">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0;margin-top:1.5px">
+              <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+            Vui lòng chọn quốc gia
+          </div>
+        </div>
+      </div>
+
+      <!-- Select Disabled -->
+      <div class="demo-card">
+        <span class="state-badge badge-disabled">Disabled</span>
+        <div class="field-wrapper">
+          <label class="field-label" style="opacity:0.4;">Quốc gia</label>
+          <div class="input-container is-disabled">
+            <select class="select-field" disabled>
+              <option>Disabled</option>
+            </select>
+            <div class="select-chevron" style="opacity:0.3;">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
+                <path d="M3 6l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==========================================
+       SECTION 5 — DATE PICKER
+  =========================================== -->
+  <section class="section">
+    <h2 class="section-title">05 — Date Picker</h2>
+
+    <div class="grid">
+
+      <div class="demo-card">
+        <span class="state-badge badge-default">Default</span>
+        <div class="field-wrapper">
+          <label class="field-label">Ngày sinh</label>
+          <div class="input-container">
+            <input class="date-field input-field" type="date" />
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <span class="state-badge badge-filled">Filled</span>
+        <div class="field-wrapper">
+          <label class="field-label">Ngày sinh</label>
+          <div class="input-container is-filled">
+            <input class="date-field input-field" type="date" value="2000-01-15" />
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <span class="state-badge badge-error">Error</span>
+        <div class="field-wrapper">
+          <label class="field-label">Ngày sinh</label>
+          <div class="input-container is-error">
+            <input class="date-field input-field" type="date" />
+          </div>
+          <div class="field-helper is-error">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0;margin-top:1.5px">
+              <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+            Ngày không hợp lệ
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <span class="state-badge badge-disabled">Disabled</span>
+        <div class="field-wrapper">
+          <label class="field-label" style="opacity:0.4;">Ngày sinh</label>
+          <div class="input-container is-disabled">
+            <input class="date-field input-field" type="date" disabled />
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==========================================
+       SECTION 6 — TEXTAREA
+  =========================================== -->
+  <section class="section">
+    <h2 class="section-title">06 — Text Area</h2>
+
+    <div class="grid-2">
+
+      <div class="demo-card">
+        <span class="state-badge badge-default">Default</span>
+        <div class="field-wrapper">
+          <label class="field-label">Mô tả</label>
+          <div class="input-container is-textarea">
+            <textarea class="textarea-field" placeholder="Nhập mô tả..."></textarea>
+          </div>
+          <div class="field-helper">Tối đa 500 ký tự</div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <span class="state-badge badge-filled">Filled</span>
+        <div class="field-wrapper">
+          <label class="field-label">Mô tả</label>
+          <div class="input-container is-textarea is-filled">
+            <textarea class="textarea-field">Đây là nội dung đã được nhập vào textarea. Người dùng có thể kéo để thay đổi kích thước.</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <span class="state-badge badge-error">Error</span>
+        <div class="field-wrapper">
+          <label class="field-label">Mô tả</label>
+          <div class="input-container is-textarea is-error">
+            <textarea class="textarea-field">ab</textarea>
+          </div>
+          <div class="field-helper is-error">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px;flex-shrink:0;margin-top:1.5px">
+              <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-3.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4.5Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+            Mô tả phải có ít nhất 20 ký tự
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <span class="state-badge badge-disabled">Disabled</span>
+        <div class="field-wrapper">
+          <label class="field-label" style="opacity:0.4;">Mô tả</label>
+          <div class="input-container is-textarea is-disabled">
+            <textarea class="textarea-field" placeholder="Disabled" disabled></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <div class="divider"></div>
+
+
+  <!-- ==========================================
+       THEORY SECTION
+  =========================================== -->
+  <section class="section">
+    <h2 class="section-title">📖 Lý thuyết — Input States & Validation</h2>
+
+    <div class="theory-grid">
+
+      <div class="theory-card">
+        <div class="theory-card-title">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v4M8 10.5v.5"/></svg>
+          Interaction States
+        </div>
+        <ul>
+          <li><span class="highlight">Default</span> — Trạng thái ban đầu, chưa tương tác</li>
+          <li><span class="highlight">Hover</span> — Chuột di qua, border sáng hơn</li>
+          <li><span class="highlight">Focus</span> — Đang nhập, ring highlight rõ ràng</li>
+          <li><span class="highlight">Filled</span> — Đã có giá trị, border subtle</li>
+        </ul>
+      </div>
+
+      <div class="theory-card">
+        <div class="theory-card-title">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Z"/><path d="M8 4.5v4M8 10.5v.5"/></svg>
+          Error State — a11y
+        </div>
+        <ul>
+          <li>Luôn kèm <span class="highlight">icon + message</span> rõ ràng</li>
+          <li>Không chỉ dựa vào màu đỏ (color-blind)</li>
+          <li><span class="code-inline">"Email không hợp lệ"</span> thay vì <span class="code-inline">"Invalid"</span></li>
+          <li>Border + background đổi để tăng contrast</li>
+        </ul>
+      </div>
+
+      <div class="theory-card">
+        <div class="theory-card-title">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="12" height="9" rx="1.5"/><path d="M5 4V3a3 3 0 0 1 6 0v1"/></svg>
+          Disabled vs Read-only
+        </div>
+        <ul>
+          <li><span class="highlight">Disabled</span> — Không tương tác, không submit, opacity thấp</li>
+          <li><span class="highlight">Read-only</span> — Không edit, <em>vẫn submit</em> được</li>
+          <li>Disabled: dùng khi feature chưa available</li>
+          <li>Read-only: dùng khi hiển thị data cố định</li>
+        </ul>
+      </div>
+
+      <div class="theory-card">
+        <div class="theory-card-title">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12
