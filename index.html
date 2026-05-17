@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Homa Games — Colors</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #F9FAFB;
+    padding: 64px 80px;
+    color: #111;
+    max-width: 1200px;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 56px;
+    letter-spacing: -0.5px;
+  }
+  .section {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid #E5E7EB;
+  }
+  .section:last-child { border-bottom: none; }
+  .section-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    width: 160px;
+    min-width: 160px;
+    padding-top: 6px;
+    line-height: 1.6;
+  }
+  .swatches { display: flex; flex-wrap: wrap; gap: 20px; }
+  .swatch-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 80px;
+  }
+  .swatch {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.07);
+  }
+  .swatch-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.4;
+  }
+  .swatch-hex {
+    font-size: 10px;
+    color: #6B7280;
+    font-family: 'Courier New', monospace;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<h1>Colors</h1>
+
+<!-- TEXT -->
+<div class="section">
+  <div class="section-label">Text</div>
+  <div class="swatches">
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#0F0F19;"></div>
+      <div class="swatch-name">High Em</div>
+      <div class="swatch-hex">#0F0F19<br>rgb(15,15,25)</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#3D3D4E;"></div>
+      <div class="swatch-name">Medium Em</div>
+      <div class="swatch-hex">#3D3D4E<br>rgb(61,61,78)</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#6B6B7B;"></div>
+      <div class="swatch-name">Low Em</div>
+      <div class="swatch-hex">#6B6B7B<br>rgb(107,107,123)</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#FFFFFF; border:1px solid #E5E7EB;"></div>
+      <div class="swatch-name">Reversed</div>
+      <div class="swatch-hex">#FFFFFF<br>on dark bg</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:rgba(255,255,255,0.75);"></div>
+      <div class="swatch-name">Body Reversed</div>
+      <div class="swatch-hex">#FFFFFF<br>75% opacity</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#FF4444;"></div>
+      <div class="swatch-name">Error</div>
+      <div class="swatch-hex">#FF4444<br>rgb(255,68,68)</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#65AA8D;"></div>
+      <div class="swatch-name">Success</div>
+      <div class="swatch-hex">#65AA8D<br>rgb(101,170,141)</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#FF91FA;"></div>
+      <div class="swatch-name">Label / Tag</div>
+      <div class="swatch-hex">#FF91FA<br>section labels</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BACKGROUND -->
+<div class="section">
+  <div class="section-label">Background</div>
+  <div class="swatches">
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#0F0F19;"></div>
+      <div class="swatch-name">Dark</div>
+      <div class="swatch-hex">#0F0F19<br>primary bg</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#1A1A2E;"></div>
+      <div class="swatch-name">Dark Card</div>
+      <div class="swatch-hex">#1A1A2E<br>card on dark</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#FF91FA;"></div>
+      <div class="swatch-name">Pink</div>
+      <div class="swatch-hex">#FF91FA<br>hero section</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#E6C3E6;"></div>
+      <div class="swatch-name">Lilac</div>
+      <div class="swatch-hex">#E6C3E6<br>icon tint</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#C9E441;"></div>
+      <div class="swatch-name">Lime</div>
+      <div class="swatch-hex">#C9E441<br>accent section</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#E5E7EB;"></div>
+      <div class="swatch-name">Grey</div>
+      <div class="swatch-hex">#E5E7EB<br>divider / bg</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#F3F4F6; border:1px solid #E5E7EB;"></div>
+      <div class="swatch-name">Off-White</div>
+      <div class="swatch-hex">#F3F4F6<br>news section</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:rgba(15,15,25,0.04); border:1px solid #eee;"></div>
+      <div class="swatch-name">Hover</div>
+      <div class="swatch-hex">#0F0F19<br>4% opacity</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:rgba(15,15,25,0.08);"></div>
+      <div class="swatch-name">Pressed</div>
+      <div class="swatch-hex">#0F0F19<br>8% opacity</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:rgba(15,15,25,0.05);"></div>
+      <div class="swatch-name">Disabled</div>
+      <div class="swatch-hex">#0F0F19<br>5% opacity</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ACCENT -->
+<div class="section">
+  <div class="section-label">Accent</div>
+  <div class="swatches">
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#C9E441;"></div>
+      <div class="swatch-name">Lime</div>
+      <div class="swatch-hex">#C9E441<br>highlight text</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#FF91FA;"></div>
+      <div class="swatch-name">Pink</div>
+      <div class="swatch-hex">#FF91FA<br>hero / label</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#FF7855;"></div>
+      <div class="swatch-name">Coral</div>
+      <div class="swatch-hex">#FF7855<br>CTA highlight</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#65AA8D;"></div>
+      <div class="swatch-name">Teal</div>
+      <div class="swatch-hex">#65AA8D<br>success / data</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#6E59B4;"></div>
+      <div class="swatch-name">Purple</div>
+      <div class="swatch-hex">#6E59B4<br>web3 section</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BORDER -->
+<div class="section">
+  <div class="section-label">Border</div>
+  <div class="swatches">
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#E5E7EB;"></div>
+      <div class="swatch-name">Solid Light</div>
+      <div class="swatch-hex">#E5E7EB<br>on white bg</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:rgba(255,255,255,0.25); border:1px solid #ccc;"></div>
+      <div class="swatch-name">Transparent White</div>
+      <div class="swatch-hex">#FFFFFF<br>25% — on dark</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:rgba(15,15,25,0.12);"></div>
+      <div class="swatch-name">Transparent Dark</div>
+      <div class="swatch-hex">#0F0F19<br>12% — on light</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:rgba(15,15,25,0.05);"></div>
+      <div class="swatch-name">Disabled</div>
+      <div class="swatch-hex">#0F0F19<br>5% opacity</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BUTTON PRIMARY -->
+<div class="section">
+  <div class="section-label">Button / Primary</div>
+  <div class="swatches">
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#0F0F19;"></div>
+      <div class="swatch-name">Normal</div>
+      <div class="swatch-hex">#0F0F19<br>dark filled</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#2A2A3E;"></div>
+      <div class="swatch-name">Hover</div>
+      <div class="swatch-hex">#2A2A3E<br>slightly lighter</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#E5E7EB;"></div>
+      <div class="swatch-name">Disabled</div>
+      <div class="swatch-hex">#E5E7EB<br>grey filled</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BUTTON SECONDARY (OUTLINE) -->
+<div class="section">
+  <div class="section-label">Button / Secondary<br><span style="font-weight:400;color:#9CA3AF">(Outline)</span></div>
+  <div class="swatches">
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:transparent; border:2px solid #0F0F19;"></div>
+      <div class="swatch-name">Normal</div>
+      <div class="swatch-hex">Transparent<br>border #0F0F19</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:rgba(15,15,25,0.06); border:2px solid #0F0F19;"></div>
+      <div class="swatch-name">Hover</div>
+      <div class="swatch-hex">bg 6% dark<br>border #0F0F19</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:transparent; border:2px solid #E5E7EB;"></div>
+      <div class="swatch-name">Disabled</div>
+      <div class="swatch-hex">Transparent<br>border #E5E7EB</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BUTTON OUTLINE REVERSED (on dark bg) -->
+<div class="section">
+  <div class="section-label">Button / Outline<br>Reversed<br><span style="font-weight:400;color:#9CA3AF">(on dark bg)</span></div>
+  <div class="swatches">
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#0F0F19; border:2px solid rgba(255,255,255,0.8);"></div>
+      <div class="swatch-name">Normal</div>
+      <div class="swatch-hex">bg #0F0F19<br>border white 80%</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#1A1A2E; border:2px solid #FFFFFF;"></div>
+      <div class="swatch-name">Hover</div>
+      <div class="swatch-hex">bg #1A1A2E<br>border #FFFFFF</div>
+    </div>
+
+    <div class="swatch-item">
+      <div class="swatch" style="background:#0F0F19; border:2px solid rgba(255,255,255,0.25);"></div>
+      <div class="swatch-name">Disabled</div>
+      <div class="swatch-hex">bg #0F0F19<br>border white 25%</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
